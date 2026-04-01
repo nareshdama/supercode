@@ -1,0 +1,10 @@
+﻿{
+  "mcpServers": {
+    "local": {
+      "transport": "builtin",
+      "trust": "trusted",
+      "timeoutMs": 40,
+      "retryCount": 1
+    }
+  }
+}

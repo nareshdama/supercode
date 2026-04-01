@@ -1,0 +1,41 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./packages/core"
+    },
+    {
+      "path": "./packages/tasks"
+    },
+    {
+      "path": "./packages/progress"
+    },
+    {
+      "path": "./packages/permissions"
+    },
+    {
+      "path": "./packages/state"
+    },
+    {
+      "path": "./packages/tools"
+    },
+    {
+      "path": "./packages/models"
+    },
+    {
+      "path": "./packages/detect"
+    },
+    {
+      "path": "./packages/mcp"
+    },
+    {
+      "path": "./packages/workflows"
+    },
+    {
+      "path": "./packages/cli"
+    },
+    {
+      "path": "./packages/create-supercode"
+    }
+  ]
+}

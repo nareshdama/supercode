@@ -1,0 +1,716 @@
+TAP version 13
+# Subtest: runCli init writes Supercode state for a new project
+ok 1 - runCli init writes Supercode state for a new project
+  ---
+  duration_ms: 51.8745
+  type: 'test'
+  ...
+# Subtest: runCli doctor --json reports machine-readable state
+ok 2 - runCli doctor --json reports machine-readable state
+  ---
+  duration_ms: 59.7602
+  type: 'test'
+  ...
+# Subtest: runCli init --force refreshes Supercode-managed state without overwriting project files
+ok 3 - runCli init --force refreshes Supercode-managed state without overwriting project files
+  ---
+  duration_ms: 81.5266
+  type: 'test'
+  ...
+# Subtest: runCli pack uninstall removes optional packs and preserves core
+ok 4 - runCli pack uninstall removes optional packs and preserves core
+  ---
+  duration_ms: 42.4852
+  type: 'test'
+  ...
+# Subtest: runCli task commands persist runtime tasks across invocations
+ok 5 - runCli task commands persist runtime tasks across invocations
+  ---
+  duration_ms: 174.7386
+  type: 'test'
+  ...
+# Subtest: runCli run reports ranked workflow matches
+ok 6 - runCli run reports ranked workflow matches
+  ---
+  duration_ms: 120.7882
+  type: 'test'
+  ...
+# Subtest: SimpleTaskExecutor is available in runtime context
+ok 7 - SimpleTaskExecutor is available in runtime context
+  ---
+  duration_ms: 85.1517
+  type: 'test'
+  ...
+# Subtest: runCli mcp commands list and invoke builtin runtime servers
+not ok 8 - runCli mcp commands list and invoke builtin runtime servers
+  ---
+  duration_ms: 92.6225
+  type: 'test'
+  location: 'D:\\SuperCode\\Supercode\\packages\\cli\\test\\run-cli.test.mjs:337:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /"message":"hello"/. Input:
+    
+    'Response: {"capabilities":{"tools":[]}}'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual: 'Response: {"capabilities":{"tools":[]}}'
+  operator: 'match'
+  stack: |-
+    TestContext.<anonymous> (file:///D:/SuperCode/Supercode/packages/cli/test/run-cli.test.mjs:401:12)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: runCli run persists an execution plan for retry/resume
+ok 9 - runCli run persists an execution plan for retry/resume
+  ---
+  duration_ms: 92.2663
+  type: 'test'
+  ...
+# Subtest: runCli result list shows preview for results
+ok 10 - runCli result list shows preview for results
+  ---
+  duration_ms: 147.8001
+  type: 'test'
+  ...
+# Subtest: runCli result show displays preview field
+ok 11 - runCli result show displays preview field
+  ---
+  duration_ms: 110.4247
+  type: 'test'
+  ...
+# Subtest: runCli task retry re-executes a failed task using stored plan
+ok 12 - runCli task retry re-executes a failed task using stored plan
+  ---
+  duration_ms: 136.2129
+  type: 'test'
+  ...
+# Subtest: runCli task resume continues from stored progress
+ok 13 - runCli task resume continues from stored progress
+  ---
+  duration_ms: 114.2669
+  type: 'test'
+  ...
+# Subtest: runCli task retry --force retries non-retryable errors
+ok 14 - runCli task retry --force retries non-retryable errors
+  ---
+  duration_ms: 154.7075
+  type: 'test'
+  ...
+# Subtest: detectProjectProfile identifies a TypeScript npm project
+ok 15 - detectProjectProfile identifies a TypeScript npm project
+  ---
+  duration_ms: 19.6368
+  type: 'test'
+  ...
+# Subtest: detectInvocationContext treats npm exec as npx
+ok 16 - detectInvocationContext treats npm exec as npx
+  ---
+  duration_ms: 0.1054
+  type: 'test'
+  ...
+# Subtest: detectProjectProfile resolves project root from nested directories
+ok 17 - detectProjectProfile resolves project root from nested directories
+  ---
+  duration_ms: 20.2698
+  type: 'test'
+  ...
+# Subtest: detectHostCapabilities and detectModelCapabilities respect explicit overrides safely
+ok 18 - detectHostCapabilities and detectModelCapabilities respect explicit overrides safely
+  ---
+  duration_ms: 0.2702
+  type: 'test'
+  ...
+# Subtest: detectProjectProfile keeps isolated directories local when no project signals exist
+ok 19 - detectProjectProfile keeps isolated directories local when no project signals exist
+  ---
+  duration_ms: 18.7321
+  type: 'test'
+  ...
+# Subtest: detectMcpSupport parses project config and trust posture
+ok 20 - detectMcpSupport parses project config and trust posture
+  ---
+  duration_ms: 1.0918
+  type: 'test'
+  ...
+# Subtest: detectMcpSupport prefers project config over .supercode config
+ok 21 - detectMcpSupport prefers project config over .supercode config
+  ---
+  duration_ms: 0.9976
+  type: 'test'
+  ...
+# Subtest: detectMcpSupport handles disabled MCP safely
+ok 22 - detectMcpSupport handles disabled MCP safely
+  ---
+  duration_ms: 0.6879
+  type: 'test'
+  ...
+# Subtest: loadMcpRuntimeConfig parses builtin server transport and defaults
+ok 23 - loadMcpRuntimeConfig parses builtin server transport and defaults
+  ---
+  duration_ms: 0.6721
+  type: 'test'
+  ...
+# Subtest: LocalMcpRuntime invokes builtin logic over mock JSON-RPC
+ok 24 - LocalMcpRuntime invokes builtin logic over mock JSON-RPC
+  ---
+  duration_ms: 0.7717
+  type: 'test'
+  ...
+# Subtest: LocalMcpRuntime invokes stdio MCP servers over JSON-RPC
+ok 25 - LocalMcpRuntime invokes stdio MCP servers over JSON-RPC
+  ---
+  duration_ms: 28.0618
+  type: 'test'
+  ...
+# Subtest: LocalMcpRuntime invokes HTTP MCP servers over JSON-RPC
+ok 26 - LocalMcpRuntime invokes HTTP MCP servers over JSON-RPC
+  ---
+  duration_ms: 23.9175
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy starts with zero usage
+ok 27 - BudgetPolicy starts with zero usage
+  ---
+  duration_ms: 0.1232
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy records usage and updates snapshot
+ok 28 - BudgetPolicy records usage and updates snapshot
+  ---
+  duration_ms: 0.0822
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy accumulates usage across multiple records
+ok 29 - BudgetPolicy accumulates usage across multiple records
+  ---
+  duration_ms: 0.0545
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy isWithinBudget returns true when no limit set
+ok 30 - BudgetPolicy isWithinBudget returns true when no limit set
+  ---
+  duration_ms: 0.0739
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy detects budget exhaustion
+ok 31 - BudgetPolicy detects budget exhaustion
+  ---
+  duration_ms: 0.0568
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy getWarning returns null when no limit
+ok 32 - BudgetPolicy getWarning returns null when no limit
+  ---
+  duration_ms: 0.0468
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy getWarning returns exhaustion warning
+ok 33 - BudgetPolicy getWarning returns exhaustion warning
+  ---
+  duration_ms: 0.0431
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy getWarning returns low-budget warning
+ok 34 - BudgetPolicy getWarning returns low-budget warning
+  ---
+  duration_ms: 0.0357
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy reserve creates a reservation
+ok 35 - BudgetPolicy reserve creates a reservation
+  ---
+  duration_ms: 0.0708
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy computeCost calculates correctly
+ok 36 - BudgetPolicy computeCost calculates correctly
+  ---
+  duration_ms: 0.0474
+  type: 'test'
+  ...
+# Subtest: BudgetPolicy remainingBudget updates correctly
+ok 37 - BudgetPolicy remainingBudget updates correctly
+  ---
+  duration_ms: 0.045
+  type: 'test'
+  ...
+# Subtest: ModelCatalog registers and lists providers
+ok 38 - ModelCatalog registers and lists providers
+  ---
+  duration_ms: 0.0929
+  type: 'test'
+  ...
+# Subtest: ModelCatalog lists models from all registered providers
+ok 39 - ModelCatalog lists models from all registered providers
+  ---
+  duration_ms: 0.0911
+  type: 'test'
+  ...
+# Subtest: ModelCatalog.getModel finds a specific model
+ok 40 - ModelCatalog.getModel finds a specific model
+  ---
+  duration_ms: 0.0638
+  type: 'test'
+  ...
+# Subtest: ModelCatalog.findByFamily returns all models in a family
+ok 41 - ModelCatalog.findByFamily returns all models in a family
+  ---
+  duration_ms: 0.0507
+  type: 'test'
+  ...
+# Subtest: ModelCatalog.autoDiscover detects providers from env
+ok 42 - ModelCatalog.autoDiscover detects providers from env
+  ---
+  duration_ms: 0.1197
+  type: 'test'
+  ...
+# Subtest: ModelCatalog.autoDiscover skips unconfigured providers
+ok 43 - ModelCatalog.autoDiscover skips unconfigured providers
+  ---
+  duration_ms: 0.031
+  type: 'test'
+  ...
+# Subtest: ModelCatalog.getHealth returns health for all providers
+ok 44 - ModelCatalog.getHealth returns health for all providers
+  ---
+  duration_ms: 0.0707
+  type: 'test'
+  ...
+# Subtest: ModelRouter selects a model matching tool requirements
+ok 45 - ModelRouter selects a model matching tool requirements
+  ---
+  duration_ms: 0.2877
+  type: 'test'
+  ...
+# Subtest: ModelRouter produces fallbacks from different models
+ok 46 - ModelRouter produces fallbacks from different models
+  ---
+  duration_ms: 0.0948
+  type: 'test'
+  ...
+# Subtest: ModelRouter respects preferred provider
+ok 47 - ModelRouter respects preferred provider
+  ---
+  duration_ms: 0.0851
+  type: 'test'
+  ...
+# Subtest: ModelRouter respects preferred model
+ok 48 - ModelRouter respects preferred model
+  ---
+  duration_ms: 0.0726
+  type: 'test'
+  ...
+# Subtest: ModelRouter prefers fast models for interactive target
+ok 49 - ModelRouter prefers fast models for interactive target
+  ---
+  duration_ms: 0.0574
+  type: 'test'
+  ...
+# Subtest: ModelRouter prefers deep models for background target
+ok 50 - ModelRouter prefers deep models for background target
+  ---
+  duration_ms: 0.0509
+  type: 'test'
+  ...
+# Subtest: ModelRouter logs decisions
+ok 51 - ModelRouter logs decisions
+  ---
+  duration_ms: 0.1127
+  type: 'test'
+  ...
+# Subtest: ModelRouter throws when no models match requirements
+ok 52 - ModelRouter throws when no models match requirements
+  ---
+  duration_ms: 0.2282
+  type: 'test'
+  ...
+# Subtest: inferModelCapabilities recognizes GPT-5 style models
+ok 53 - inferModelCapabilities recognizes GPT-5 style models
+  ---
+  duration_ms: 0.0957
+  type: 'test'
+  ...
+# Subtest: PromptRegistry registers and resolves a template
+ok 54 - PromptRegistry registers and resolves a template
+  ---
+  duration_ms: 0.1196
+  type: 'test'
+  ...
+# Subtest: PromptRegistry resolves specific version
+ok 55 - PromptRegistry resolves specific version
+  ---
+  duration_ms: 0.0633
+  type: 'test'
+  ...
+# Subtest: PromptRegistry resolves latest version when no version specified
+ok 56 - PromptRegistry resolves latest version when no version specified
+  ---
+  duration_ms: 0.0428
+  type: 'test'
+  ...
+# Subtest: PromptRegistry renders template with variables
+ok 57 - PromptRegistry renders template with variables
+  ---
+  duration_ms: 0.1024
+  type: 'test'
+  ...
+# Subtest: PromptRegistry render throws on missing variable
+ok 58 - PromptRegistry render throws on missing variable
+  ---
+  duration_ms: 0.0613
+  type: 'test'
+  ...
+# Subtest: PromptRegistry render throws on unknown prompt
+ok 59 - PromptRegistry render throws on unknown prompt
+  ---
+  duration_ms: 0.0455
+  type: 'test'
+  ...
+# Subtest: PromptRegistry.withBuiltins contains system prompts
+ok 60 - PromptRegistry.withBuiltins contains system prompts
+  ---
+  duration_ms: 0.0875
+  type: 'test'
+  ...
+# Subtest: PromptRegistry.withBuiltins system prompt renders correctly
+ok 61 - PromptRegistry.withBuiltins system prompt renders correctly
+  ---
+  duration_ms: 0.0482
+  type: 'test'
+  ...
+# Subtest: PromptRegistry listVersions returns sorted versions
+ok 62 - PromptRegistry listVersions returns sorted versions
+  ---
+  duration_ms: 0.0592
+  type: 'test'
+  ...
+# Subtest: PromptRegistry resolve returns undefined for unknown prompt
+ok 63 - PromptRegistry resolve returns undefined for unknown prompt
+  ---
+  duration_ms: 0.0286
+  type: 'test'
+  ...
+# Subtest: OpenAIProvider lists known models
+ok 64 - OpenAIProvider lists known models
+  ---
+  duration_ms: 0.7976
+  type: 'test'
+  ...
+# Subtest: OpenAIProvider starts healthy
+ok 65 - OpenAIProvider starts healthy
+  ---
+  duration_ms: 0.0508
+  type: 'test'
+  ...
+# Subtest: OpenAIProvider health notes warn when no API key
+ok 66 - OpenAIProvider health notes warn when no API key
+  ---
+  duration_ms: 0.0446
+  type: 'test'
+  ...
+# Subtest: OpenAIProvider invoke normalizes response
+ok 67 - OpenAIProvider invoke normalizes response
+  ---
+  duration_ms: 0.2888
+  type: 'test'
+  ...
+# Subtest: OpenAIProvider invoke handles tool calls
+ok 68 - OpenAIProvider invoke handles tool calls
+  ---
+  duration_ms: 0.1364
+  type: 'test'
+  ...
+# Subtest: OpenAIProvider invoke records failure on HTTP error
+ok 69 - OpenAIProvider invoke records failure on HTTP error
+  ---
+  duration_ms: 0.1615
+  type: 'test'
+  ...
+# Subtest: AnthropicProvider lists known models
+ok 70 - AnthropicProvider lists known models
+  ---
+  duration_ms: 0.0828
+  type: 'test'
+  ...
+# Subtest: AnthropicProvider starts healthy
+ok 71 - AnthropicProvider starts healthy
+  ---
+  duration_ms: 0.0386
+  type: 'test'
+  ...
+# Subtest: AnthropicProvider invoke normalizes response
+ok 72 - AnthropicProvider invoke normalizes response
+  ---
+  duration_ms: 0.2764
+  type: 'test'
+  ...
+# Subtest: AnthropicProvider invoke handles tool_use blocks
+ok 73 - AnthropicProvider invoke handles tool_use blocks
+  ---
+  duration_ms: 0.1236
+  type: 'test'
+  ...
+# Subtest: AnthropicProvider invoke records failure on HTTP error
+ok 74 - AnthropicProvider invoke records failure on HTTP error
+  ---
+  duration_ms: 0.1076
+  type: 'test'
+  ...
+# Subtest: DefaultPermissionSystem prompts for shell in default mode
+ok 75 - DefaultPermissionSystem prompts for shell in default mode
+  ---
+  duration_ms: 0.0713
+  type: 'test'
+  ...
+# Subtest: DefaultPermissionSystem allows session actions and bypasses all in bypass mode
+ok 76 - DefaultPermissionSystem allows session actions and bypasses all in bypass mode
+  ---
+  duration_ms: 0.0726
+  type: 'test'
+  ...
+# Subtest: DefaultPermissionSystem respects explicit allow and deny overrides
+ok 77 - DefaultPermissionSystem respects explicit allow and deny overrides
+  ---
+  duration_ms: 0.0728
+  type: 'test'
+  ...
+# Subtest: InMemoryProgressTracker records step and percent updates
+ok 78 - InMemoryProgressTracker records step and percent updates
+  ---
+  duration_ms: 0.1408
+  type: 'test'
+  ...
+# Subtest: InMemoryProgressTracker maps task lifecycle events into progress snapshots
+ok 79 - InMemoryProgressTracker maps task lifecycle events into progress snapshots
+  ---
+  duration_ms: 0.2767
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore creates and reloads session state
+ok 80 - FileRuntimeStateStore creates and reloads session state
+  ---
+  duration_ms: 3.487
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore persists tasks, progress, and permission logs
+ok 81 - FileRuntimeStateStore persists tasks, progress, and permission logs
+  ---
+  duration_ms: 3.6244
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore persists result records and updates the session index
+ok 82 - FileRuntimeStateStore persists result records and updates the session index
+  ---
+  duration_ms: 2.978
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore saves and loads execution plans
+ok 83 - FileRuntimeStateStore saves and loads execution plans
+  ---
+  duration_ms: 1.76
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore lists all stored plans
+ok 84 - FileRuntimeStateStore lists all stored plans
+  ---
+  duration_ms: 2.3482
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore loadPlan returns undefined for unknown task
+ok 85 - FileRuntimeStateStore loadPlan returns undefined for unknown task
+  ---
+  duration_ms: 0.7398
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore saves and loads artifacts
+ok 86 - FileRuntimeStateStore saves and loads artifacts
+  ---
+  duration_ms: 1.7092
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore loadArtifact returns undefined for missing artifacts
+ok 87 - FileRuntimeStateStore loadArtifact returns undefined for missing artifacts
+  ---
+  duration_ms: 1.1132
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore truncates large result data into preview and stores artifact
+ok 88 - FileRuntimeStateStore truncates large result data into preview and stores artifact
+  ---
+  duration_ms: 3.531
+  type: 'test'
+  ...
+# Subtest: FileRuntimeStateStore does not truncate small result data
+ok 89 - FileRuntimeStateStore does not truncate small result data
+  ---
+  duration_ms: 2.3678
+  type: 'test'
+  ...
+# Subtest: SimpleTaskExecutor runs steps and records progress
+ok 90 - SimpleTaskExecutor runs steps and records progress
+  ---
+  duration_ms: 0.3389
+  type: 'test'
+  ...
+# Subtest: SimpleTaskExecutor captures per-step timing in stepOutcomes
+ok 91 - SimpleTaskExecutor captures per-step timing in stepOutcomes
+  ---
+  duration_ms: 39.2736
+  type: 'test'
+  ...
+# Subtest: SimpleTaskExecutor resume skips completed steps
+ok 92 - SimpleTaskExecutor resume skips completed steps
+  ---
+  duration_ms: 0.3343
+  type: 'test'
+  ...
+# Subtest: SimpleTaskExecutor returns partial stepOutcomes on failure
+ok 93 - SimpleTaskExecutor returns partial stepOutcomes on failure
+  ---
+  duration_ms: 0.2996
+  type: 'test'
+  ...
+# Subtest: SimpleTaskExecutor extracts stdout/stderr/exitCode from shell-like tool outputs
+ok 94 - SimpleTaskExecutor extracts stdout/stderr/exitCode from shell-like tool outputs
+  ---
+  duration_ms: 0.2152
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager creates parent and child tasks with events
+ok 95 - InMemoryTaskManager creates parent and child tasks with events
+  ---
+  duration_ms: 0.1046
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager supports retryable failure and retry flow
+ok 96 - InMemoryTaskManager supports retryable failure and retry flow
+  ---
+  duration_ms: 0.1938
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager enforces lifecycle transitions
+ok 97 - InMemoryTaskManager enforces lifecycle transitions
+  ---
+  duration_ms: 0.1964
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager retryTask with force bypasses retryable check
+ok 98 - InMemoryTaskManager retryTask with force bypasses retryable check
+  ---
+  duration_ms: 0.1943
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager retryTask respects maxAttempts even with force
+ok 99 - InMemoryTaskManager retryTask respects maxAttempts even with force
+  ---
+  duration_ms: 0.1303
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager resumeTask moves failed task to running
+ok 100 - InMemoryTaskManager resumeTask moves failed task to running
+  ---
+  duration_ms: 0.1018
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager resumeTask rejects non-failed tasks
+ok 101 - InMemoryTaskManager resumeTask rejects non-failed tasks
+  ---
+  duration_ms: 0.0821
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager resumeTask respects maxAttempts
+ok 102 - InMemoryTaskManager resumeTask respects maxAttempts
+  ---
+  duration_ms: 0.1138
+  type: 'test'
+  ...
+# Subtest: InMemoryTaskManager tracks planRef on task records
+ok 103 - InMemoryTaskManager tracks planRef on task records
+  ---
+  duration_ms: 0.0594
+  type: 'test'
+  ...
+# Subtest: registerFirstPartyTools registers defined tools with permissions
+ok 104 - registerFirstPartyTools registers defined tools with permissions
+  ---
+  duration_ms: 0.0785
+  type: 'test'
+  ...
+# Subtest: fs.read and fs.write operate within working directory
+ok 105 - fs.read and fs.write operate within working directory
+  ---
+  duration_ms: 2.8069
+  type: 'test'
+  ...
+# Subtest: shell.exec returns stdout and respects working directory
+ok 106 - shell.exec returns stdout and respects working directory
+  ---
+  duration_ms: 13.2568
+  type: 'test'
+  ...
+# Subtest: ExecutableToolRegistry invokes registered tools and preserves execute handlers
+ok 107 - ExecutableToolRegistry invokes registered tools and preserves execute handlers
+  ---
+  duration_ms: 0.1841
+  type: 'test'
+  ...
+# Subtest: ExecutableToolRegistry blocks invocation when permission is denied
+ok 108 - ExecutableToolRegistry blocks invocation when permission is denied
+  ---
+  duration_ms: 0.1191
+  type: 'test'
+  ...
+# Subtest: ExecutableToolRegistry rejects duplicate tool ids
+ok 109 - ExecutableToolRegistry rejects duplicate tool ids
+  ---
+  duration_ms: 0.0828
+  type: 'test'
+  ...
+# Subtest: recommendWorkflowPacks includes core and TypeScript for TypeScript projects
+ok 110 - recommendWorkflowPacks includes core and TypeScript for TypeScript projects
+  ---
+  duration_ms: 0.0533
+  type: 'test'
+  ...
+# Subtest: searchSkills finds verification guidance
+ok 111 - searchSkills finds verification guidance
+  ---
+  duration_ms: 0.1319
+  type: 'test'
+  ...
+# Subtest: listWorkflowPackSummaries exposes manifest metadata
+ok 112 - listWorkflowPackSummaries exposes manifest metadata
+  ---
+  duration_ms: 0.0417
+  type: 'test'
+  ...
+# Subtest: optional workflow packs can be uninstalled while core packs remain protected
+ok 113 - optional workflow packs can be uninstalled while core packs remain protected
+  ---
+  duration_ms: 1.1782
+  type: 'test'
+  ...
+# Subtest: rankSkillsForTask prioritizes the most relevant workflow
+ok 114 - rankSkillsForTask prioritizes the most relevant workflow
+  ---
+  duration_ms: 0.1508
+  type: 'test'
+  ...
+# Subtest: rankRulesForTask prioritizes export and typing guidance for TypeScript tasks
+ok 115 - rankRulesForTask prioritizes export and typing guidance for TypeScript tasks
+  ---
+  duration_ms: 0.1251
+  type: 'test'
+  ...
+1..115
+# tests 115
+# suites 0
+# pass 114
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1736.1682

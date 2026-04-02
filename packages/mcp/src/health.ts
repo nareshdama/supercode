@@ -4,6 +4,7 @@ export interface HealthMonitorOptions {
   degradedThreshold?: number;
   backoffThreshold?: number;
   concurrencyLimit?: number;
+  queueLimit?: number;
 }
 
 export class MCPHealthMonitor {
@@ -12,15 +13,21 @@ export class MCPHealthMonitor {
   private lastError?: string;
   private lastCheckedAt: string;
   private activeRequests = 0;
+  private readonly waitQueue: Array<{
+    resolve: () => void;
+    reject: (error: Error) => void;
+  }> = [];
   
   private readonly degradedThreshold: number;
   private readonly backoffThreshold: number;
   private readonly concurrencyLimit: number;
+  private readonly queueLimit: number;
 
   constructor(options?: HealthMonitorOptions) {
     this.degradedThreshold = options?.degradedThreshold ?? 1;
     this.backoffThreshold = options?.backoffThreshold ?? 3;
     this.concurrencyLimit = options?.concurrencyLimit ?? 5;
+    this.queueLimit = options?.queueLimit ?? 10;
     this.lastCheckedAt = new Date().toISOString();
   }
 
@@ -75,16 +82,46 @@ export class MCPHealthMonitor {
     return this.activeRequests < this.concurrencyLimit;
   }
 
-  async acquireConcurrency<T>(fn: () => Promise<T>): Promise<T> {
-    if (!this.canAcceptRequest()) {
-      throw new Error(`MCP concurrency limit exceeded (${this.concurrencyLimit} active requests).`);
+  private acquireSlot(): Promise<void> {
+    if (this.canAcceptRequest()) {
+      this.activeRequests += 1;
+      return Promise.resolve();
     }
 
-    this.activeRequests += 1;
+    if (this.waitQueue.length >= this.queueLimit) {
+      return Promise.reject(
+        new Error(
+          `MCP request queue limit exceeded (${this.queueLimit} queued requests).`
+        )
+      );
+    }
+
+    return new Promise((resolve, reject) => {
+      this.waitQueue.push({
+        resolve: () => resolve(),
+        reject
+      });
+    });
+  }
+
+  private releaseSlot(): void {
+    const next = this.waitQueue.shift();
+    if (next) {
+      next.resolve();
+      return;
+    }
+
+    if (this.activeRequests > 0) {
+      this.activeRequests -= 1;
+    }
+  }
+
+  async acquireConcurrency<T>(fn: () => Promise<T>): Promise<T> {
+    await this.acquireSlot();
     try {
       return await fn();
     } finally {
-      this.activeRequests -= 1;
+      this.releaseSlot();
     }
   }
 }

@@ -1,4 +1,6 @@
-# Next Goal (M3): Resilient Execution Kernel
+# Completed Goal (M3): Resilient Execution Kernel
+
+Status: complete. This document is retained as the implementation record for the finished Phase 2 M3 milestone.
 
 Objective: finish the local execution kernel by persisting structured outputs, exposing results cleanly, and making task execution recoverable.
 

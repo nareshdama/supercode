@@ -26,6 +26,27 @@ export interface JsonRpcResponse {
 
 export type McpSendFn = (message: JsonRpcRequest | JsonRpcNotification) => Promise<JsonRpcResponse | void>;
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function readArrayField(
+  response: JsonRpcResponse | void,
+  fieldName: "tools" | "resources"
+): Record<string, unknown>[] {
+  const result = response?.result;
+  if (!isRecord(result)) {
+    throw new Error(`Capability schema violation: ${fieldName}/list result must be an object.`);
+  }
+
+  const entries = result[fieldName];
+  if (!Array.isArray(entries)) {
+    throw new Error(`Capability schema violation: ${fieldName}/list.${fieldName} must be an array.`);
+  }
+
+  return entries.filter(isRecord);
+}
+
 export async function negotiateCapabilities(send: McpSendFn): Promise<MCPCapabilityProfile> {
   const initRequest: JsonRpcRequest = {
     jsonrpc: "2.0",
@@ -47,9 +68,20 @@ export async function negotiateCapabilities(send: McpSendFn): Promise<MCPCapabil
     throw new Error(`MCP Initialization failed: ${initResponse?.error?.message ?? "No response"}`);
   }
 
-  const result = initResponse.result as any;
-  const protocolVersion = result?.protocolVersion ?? "2024-11-05";
+  if (!isRecord(initResponse.result)) {
+    throw new Error("Capability schema violation: initialize result must be an object.");
+  }
+
+  const result = initResponse.result as Record<string, unknown>;
+  const protocolVersion =
+    typeof result.protocolVersion === "string" && result.protocolVersion.trim()
+      ? result.protocolVersion
+      : "2024-11-05";
   const serverCapabilities = result?.capabilities ?? {};
+
+  if (!isRecord(serverCapabilities)) {
+    throw new Error("Capability schema violation: initialize.capabilities must be an object.");
+  }
 
   // Send initialized notification
   await send({
@@ -60,29 +92,21 @@ export async function negotiateCapabilities(send: McpSendFn): Promise<MCPCapabil
   // Fetch tools if supported
   const tools: Record<string, unknown>[] = [];
   if (serverCapabilities.tools !== undefined) {
-    const toolsResponse = await send({
+    tools.push(...readArrayField(await send({
       jsonrpc: "2.0",
       id: "tools-1",
       method: "tools/list"
-    });
-
-    if (toolsResponse && toolsResponse.result && Array.isArray((toolsResponse.result as any).tools)) {
-      tools.push(...((toolsResponse.result as any).tools));
-    }
+    }), "tools"));
   }
 
   // Fetch resources if supported
   const resources: Record<string, unknown>[] = [];
   if (serverCapabilities.resources !== undefined) {
-    const resResponse = await send({
+    resources.push(...readArrayField(await send({
       jsonrpc: "2.0",
       id: "res-1",
       method: "resources/list"
-    });
-
-    if (resResponse && resResponse.result && Array.isArray((resResponse.result as any).resources)) {
-      resources.push(...((resResponse.result as any).resources));
-    }
+    }), "resources"));
   }
 
   return {
@@ -90,7 +114,7 @@ export async function negotiateCapabilities(send: McpSendFn): Promise<MCPCapabil
     tools,
     resources,
     prompts: [], // Simplified for MVP
-    supportsStreaming: serverCapabilities.prompts?.listChanged === true || false,
+    supportsStreaming: serverCapabilities.streaming === true,
     maxConcurrentRequests: 5 // Default backpressure cap
   };
 }

@@ -227,6 +227,8 @@ function parseServerConfig(
     headers: normalizeStringRecord(serverRecord.headers),
     timeoutMs: readWholeNumber(serverRecord.timeoutMs ?? serverRecord.timeout, 5000, 1),
     retryCount: readWholeNumber(serverRecord.retryCount ?? serverRecord.retries ?? serverRecord.retryAttempts, 0, 0),
+    concurrencyLimit: readWholeNumber(serverRecord.concurrencyLimit, 5, 1),
+    queueLimit: readWholeNumber(serverRecord.queueLimit, 10, 0),
     notes
   };
 }

@@ -1,6 +1,6 @@
-# Supercode Phase 1 MVP
+# Supercode
 
-Supercode is an adaptive developer orchestration framework. This Phase 1 MVP focuses on the bootstrap layer: detect the current environment, build an execution profile, select workflow packs, and expose a usable CLI.
+Supercode is an adaptive developer orchestration framework. The current repo includes the bootstrap layer, resilient local execution kernel, model control plane, MCP production layer, and an optional memory layer.
 
 ## Packages
 
@@ -13,6 +13,7 @@ Supercode is an adaptive developer orchestration framework. This Phase 1 MVP foc
 - `@supercode/state`: file-backed session, task, and progress persistence
 - `@supercode/tools`: executable tool registry with permission-aware invocation
 - `@supercode/detect`: host, model, project, and safety detection
+- `@supercode/memory`: optional session and cross-run memory providers with retrieval helpers
 - `@supercode/models`: model capability inference
 - `@supercode/workflows`: workflow pack catalog and matching
 - `@supercode/mcp`: MCP config parsing, runtime inventory, and transport adapters
@@ -54,12 +55,19 @@ npx create-supercode my-app
 - `supercode permission show`
 - `supercode result list`
 - `supercode result show <result-id>`
+- `supercode memory list [query]`
+- `supercode memory show <memory-id>`
 - `supercode mcp list`
 - `supercode mcp invoke <server-id> <tool-name> [json-args]`
+- `supercode extension list`
+- `supercode extension validate`
+- `supercode plugin list`
 - `supercode pack list`
 - `supercode pack recommend`
+- `supercode pack recommend --apply`
 - `supercode pack install <pack-id>`
 - `supercode pack uninstall <pack-id>`
+- `supercode pack sync`
 - `supercode skill search <query>`
 - `supercode rule search <query>`
 - `supercode model list`
@@ -70,6 +78,7 @@ npx create-supercode my-app
 - Detects invocation mode, package manager, host, model metadata, project root, frameworks, and git state.
 - Produces a stable execution profile and machine-readable `doctor --json` report.
 - Scaffolds `.supercode` project state plus a starter TypeScript template for empty directories.
+- Adds an editor-neutral starter template for empty directories, including a root `README.md`, `.supercode/WORKFLOW.md`, and copy-safe hook/plugin examples.
 - Selects and installs workflow packs automatically for detected projects.
 - Ranks workflow skills and rules for a task instead of using raw substring matching.
 - Reports MCP availability, config source, server count, server IDs, and trust posture.
@@ -83,9 +92,12 @@ npx create-supercode my-app
 - `.supercode/packs.json`
 - `.supercode/session.json`
 - `.supercode/README.md`
+- `.supercode/WORKFLOW.md`
+- `.supercode/extensions/`
 - `.supercode/tasks/`
 - `.supercode/progress/`
 - `.supercode/results/`
+- `.supercode/memory/`
 - `.supercode/plans/`
 - `.supercode/artifacts/`
 
@@ -179,6 +191,51 @@ The governed model invocation layer is implemented:
   - `supercode model list`: shows available models categorized by provider with cost and capabilities.
   - `supercode model status`: shows provider health, last latency, and the current session's budget snapshot.
 
+## Phase 4: MCP Production Layer
+
+The MCP runtime is now lifecycle-aware and production-oriented:
+- config parsing plus builtin, `stdio`, and `http` transports
+- trust filtering, negotiation validation, degraded/backoff/quarantine handling
+- bounded concurrency and queueing
+- CLI inspection and invocation through the runtime boundary
+
+## Phase 5: Memory Layer
+
+The memory layer is now operational as an optional runtime feature:
+- `@supercode/memory` provides local memory storage, retrieval scoring, retention helpers, and a SimpleMem adapter seam
+- `.supercode/config.json` now carries explicit memory configuration and keeps memory disabled by default
+- `.supercode/memory/` persists memory records across runs
+- `supercode run <task>` retrieves matching session memory when enabled and stores new task/result memories automatically
+- `supercode memory list [query]` and `supercode memory show <memory-id>` expose persisted memory records for inspection
+
+## Phase 6: Workflow and Extension Layer
+
+The workflow and extension layer is now functionally complete:
+- installed packs materialize generated skill and rule assets under `.supercode/extensions/generated/`
+- `.supercode/extensions/manifest.json` records the generated extension inventory for the current project
+- `.supercode/extensions/local/` is reserved for project-specific extension assets
+- `.supercode/extensions/local/hooks.json` defines local lifecycle hooks executed through the standard tool registry
+- `.supercode/extensions/plugins/<plugin-id>/plugin.json` defines local plugins discovered by the plugin loader
+- enabled plugins can contribute skills and rules into workflow search and task matching
+- enabled plugins can also declare tool adapters that wrap existing runtime tools or other plugin tools under plugin-owned tool IDs
+- enabled plugins can contribute declarative `runSteps` that inject matched execution steps into `supercode run`
+- enabled plugins can contribute declarative top-level commands that invoke runtime tools directly from the CLI
+- plugin-local tool targets can use short local IDs and are resolved into namespaced runtime tool IDs
+- plugin run steps can target built-in tools or plugin-local tool adapters and can run before or after the default plan steps
+- hooks now support `onFailure: "continue" | "abort"` so a failing hook can either be reported or stop the enclosing command
+- plugin commands can target built-in tools or plugin-local tool adapters and expose direct top-level CLI entrypoints
+- `supercode extension validate` checks local hooks, plugin manifests, duplicate workflow IDs, invalid tool references, plugin tool cycles, malformed hook failure policies, invalid plugin run-step tools, and conflicting or invalid plugin commands
+- `run.before`, `run.after`, `pack.install.after`, and `pack.uninstall.after` are the first supported hook events
+- local hooks override plugin hooks with the same `hookId`
+- runtime plugin tool invocation now detects adapter cycles and fails hooks safely instead of recursing indefinitely
+- matched plugin run steps are persisted into the normal execution plan, so retry/resume uses the same plugin-expanded plan
+- CLI hook output now reports per-hook status, source, tool, and whether the event halted command completion
+- CLI run output now reports matched plugin run steps, plugin listing shows `runSteps` and `commands` counts, and installed plugins can add direct top-level commands
+- pack lifecycle now includes `pack recommend --apply` and `pack sync` for recommendation re-application and state reconciliation against generated extensions
+- scaffolded projects now include an editor-neutral local workflow guide plus copy-safe `hooks.example.json` and `plugin.example.json` templates
+- task matching now reports whether a match came from a pack or a plugin
+- `supercode extension list` and `supercode plugin list` show the generated baseline and discovered plugins
+
 ## Next Goal
 
-**Phase 4: MCP Production Layer**. Implement the full lifecycle, trust policy, and isolation capability for Model Context Protocol connections.
+**Phase 7: Distribution and Install Experience**. Turn the completed kernel and extension layer into a smoother install, packaging, and adoption path.

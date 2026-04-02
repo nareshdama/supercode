@@ -1,23 +1,35 @@
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import type {
   ExecutionProfile,
+  MemoryAttachment,
+  MemoryProvider,
+  MemoryQuery,
   McpInvocationResult,
   McpRuntimeSummary,
   PermissionActionCategory,
   PermissionDecision,
   PermissionRequest,
+  ResultRecord,
   SessionState,
+  SupercodeConfig,
   TaskRecord,
+  ToolExecutionContext,
   ToolResult
 } from "@supercode/core";
+import type { WorkflowHookEvent, WorkflowHookExecution, WorkflowHookRunResult } from "@supercode/core";
+import { InMemoryMemoryProvider, SessionMemory, SimpleMemAdapter } from "@supercode/memory";
 import { createMcpRuntime, type LocalMcpRuntime } from "@supercode/mcp";
 import { DefaultPermissionSystem } from "@supercode/permissions";
 import { InMemoryProgressTracker } from "@supercode/progress";
 import { FileRuntimeStateStore } from "@supercode/state";
 import { InMemoryTaskManager, SimpleTaskExecutor } from "@supercode/tasks";
 import { ExecutableToolRegistry, registerFirstPartyTools } from "@supercode/tools";
-import { rankRulesForTask, rankSkillsForTask } from "@supercode/workflows";
+import { loadResolvedWorkflowHooks, loadResolvedWorkflowPluginTools, rankRulesForTask, rankSkillsForTask } from "@supercode/workflows";
 
 export interface PersistedRuntimeContext {
+  cwd: string;
+  config: SupercodeConfig;
   executionProfile: ExecutionProfile;
   stateStore: FileRuntimeStateStore;
   session: SessionState;
@@ -25,6 +37,8 @@ export interface PersistedRuntimeContext {
   progressTracker: InMemoryProgressTracker;
   permissionSystem: DefaultPermissionSystem;
   mcpRuntime: LocalMcpRuntime;
+  memoryProvider?: MemoryProvider;
+  sessionMemory?: SessionMemory;
   toolRegistry: ExecutableToolRegistry;
   executor: SimpleTaskExecutor;
 }
@@ -45,6 +59,10 @@ type RankedWorkflowSelection = {
   summary: string;
   score: number;
   reasons: string[];
+  sourceType: "pack" | "plugin";
+  sourceId: string;
+  sourceTitle: string;
+  path?: string;
 };
 
 export interface WorkflowMatchOutput {
@@ -68,8 +86,172 @@ function now(): string {
   return new Date().toISOString();
 }
 
+function clone<T>(value: T): T {
+  return structuredClone(value);
+}
+
 function unique(values: string[]): string[] {
   return [...new Set(values)];
+}
+
+function interpolateHookString(template: string, payload: Record<string, unknown>): string {
+  return template.replace(/\{\{\s*([^}]+?)\s*\}\}/g, (_match, rawPath) => {
+    const pathSegments = String(rawPath)
+      .split(".")
+      .map(segment => segment.trim())
+      .filter(Boolean);
+    let current: unknown = payload;
+
+    for (const segment of pathSegments) {
+      if (!current || typeof current !== "object" || !(segment in current)) {
+        return "";
+      }
+      current = (current as Record<string, unknown>)[segment];
+    }
+
+    if (current === undefined || current === null) {
+      return "";
+    }
+    if (typeof current === "string" || typeof current === "number" || typeof current === "boolean") {
+      return String(current);
+    }
+    return JSON.stringify(current);
+  });
+}
+
+function renderHookInput(value: unknown, payload: Record<string, unknown>): unknown {
+  if (typeof value === "string") {
+    return interpolateHookString(value, payload);
+  }
+  if (Array.isArray(value)) {
+    return value.map(item => renderHookInput(item, payload));
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, entry]) => [key, renderHookInput(entry, payload)])
+    );
+  }
+  return value;
+}
+
+function mergeToolInput(defaultInput: unknown, providedInput: unknown): unknown {
+  if (providedInput === undefined) {
+    return clone(defaultInput);
+  }
+  if (defaultInput === undefined) {
+    return clone(providedInput);
+  }
+  if (
+    defaultInput &&
+    providedInput &&
+    typeof defaultInput === "object" &&
+    typeof providedInput === "object" &&
+    !Array.isArray(defaultInput) &&
+    !Array.isArray(providedInput)
+  ) {
+    const merged: Record<string, unknown> = { ...(defaultInput as Record<string, unknown>) };
+    for (const [key, value] of Object.entries(providedInput as Record<string, unknown>)) {
+      merged[key] = mergeToolInput((defaultInput as Record<string, unknown>)[key], value);
+    }
+    return merged;
+  }
+
+  return clone(providedInput);
+}
+
+const PLUGIN_TOOL_STACK_METADATA_KEY = "workflowPluginToolStack";
+
+function readPluginToolStack(metadata: Record<string, unknown> | undefined): string[] {
+  const stack = metadata?.[PLUGIN_TOOL_STACK_METADATA_KEY];
+  return Array.isArray(stack) ? stack.filter((entry): entry is string => typeof entry === "string") : [];
+}
+
+function classifyHookStatus(result: ToolResult): WorkflowHookExecution["status"] {
+  if (result.ok) {
+    return "completed";
+  }
+  if (result.error?.includes("blocked by permission decision")) {
+    return "blocked";
+  }
+  return "failed";
+}
+
+function previewHookOutput(output: unknown): string | undefined {
+  if (output === undefined) {
+    return undefined;
+  }
+
+  const preview =
+    typeof output === "string"
+      ? output
+      : JSON.stringify(output);
+  if (!preview) {
+    return undefined;
+  }
+
+  return preview.length > 160 ? `${preview.slice(0, 157)}...` : preview;
+}
+
+function createDefaultConfig(executionProfile: ExecutionProfile): SupercodeConfig {
+  const timestamp = now();
+  return {
+    version: 1,
+    selectedPackIds: executionProfile.recommendedPackIds,
+    verificationLevel: executionProfile.verificationLevel,
+    promptBudgetProfile: executionProfile.promptBudgetProfile,
+    memory: {
+      enabled: false,
+      provider: "local",
+      attachLimit: 5,
+      defaultTags: ["supercode"],
+      defaultImportance: 0.6,
+      retention: {
+        strategy: "count-bound",
+        maxEntries: 200
+      }
+    },
+    createdAt: timestamp,
+    updatedAt: timestamp
+  };
+}
+
+function loadRuntimeConfig(cwd: string, executionProfile: ExecutionProfile): SupercodeConfig {
+  const fallback = createDefaultConfig(executionProfile);
+  const configPath = path.join(cwd, ".supercode", "config.json");
+  if (!existsSync(configPath)) {
+    return fallback;
+  }
+
+  try {
+    const parsed = JSON.parse(readFileSync(configPath, "utf8")) as Partial<SupercodeConfig>;
+    const configuredMemory = (parsed.memory ?? {}) as Partial<SupercodeConfig["memory"]>;
+    return {
+      version: 1,
+      selectedPackIds: Array.isArray(parsed.selectedPackIds) ? parsed.selectedPackIds : fallback.selectedPackIds,
+      verificationLevel: parsed.verificationLevel ?? fallback.verificationLevel,
+      promptBudgetProfile: parsed.promptBudgetProfile ?? fallback.promptBudgetProfile,
+      memory: {
+        enabled: configuredMemory.enabled ?? fallback.memory.enabled,
+        provider: configuredMemory.provider ?? fallback.memory.provider,
+        attachLimit:
+          typeof configuredMemory.attachLimit === "number" && configuredMemory.attachLimit > 0
+            ? Math.floor(configuredMemory.attachLimit)
+            : fallback.memory.attachLimit,
+        defaultTags: Array.isArray(configuredMemory.defaultTags)
+          ? configuredMemory.defaultTags.map((tag: string) => String(tag)).filter(Boolean)
+          : fallback.memory.defaultTags,
+        defaultImportance:
+          typeof configuredMemory.defaultImportance === "number"
+            ? Math.max(0, Math.min(1, configuredMemory.defaultImportance))
+            : fallback.memory.defaultImportance,
+        retention: configuredMemory.retention ?? fallback.memory.retention
+      },
+      createdAt: parsed.createdAt ?? fallback.createdAt,
+      updatedAt: parsed.updatedAt ?? fallback.updatedAt
+    };
+  } catch {
+    return fallback;
+  }
 }
 
 function isActiveTask(task: TaskRecord): boolean {
@@ -94,6 +276,28 @@ function reconcileSession(session: SessionState, tasks: TaskRecord[]): SessionSt
   };
 }
 
+function renderTaskMemoryContent(task: TaskRecord): string {
+  return [
+    `Task goal: ${task.goal}`,
+    `Status: ${task.status}`,
+    task.result?.summary ? `Result: ${task.result.summary}` : "",
+    task.error?.message ? `Error: ${task.error.message}` : ""
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function renderResultMemoryContent(result: ResultRecord): string {
+  return [
+    `Result summary: ${result.summary}`,
+    result.preview ? `Preview: ${result.preview}` : "",
+    result.taskId ? `Task: ${result.taskId}` : "",
+    result.toolId ? `Tool: ${result.toolId}` : ""
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function persistPermissionDecision(
   permissionSystem: DefaultPermissionSystem,
   stateStore: FileRuntimeStateStore,
@@ -114,11 +318,16 @@ function toRankedWorkflowSelection(
     title: item.title,
     summary: item.summary,
     score: match.score,
-    reasons: [...match.reasons]
+    reasons: [...match.reasons],
+    sourceType: match.sourceType,
+    sourceId: match.sourceId,
+    sourceTitle: match.sourceTitle,
+    path: match.path
   };
 }
 
 function createToolRegistry(
+  cwd: string,
   executionProfile: ExecutionProfile,
   mcpRuntime: LocalMcpRuntime,
   authorize: (request: Omit<PermissionRequest, "requestId" | "requestedAt">) => PermissionDecision
@@ -144,8 +353,8 @@ function createToolRegistry(
         activePackIds,
         verificationLevel: executionProfile.verificationLevel,
         promptBudgetProfile: executionProfile.promptBudgetProfile,
-        matchedSkills: rankSkillsForTask(input.task, activePackIds).map(toRankedWorkflowSelection),
-        matchedRules: rankRulesForTask(input.task, activePackIds).map(toRankedWorkflowSelection)
+        matchedSkills: rankSkillsForTask(input.task, activePackIds, cwd).map(toRankedWorkflowSelection),
+        matchedRules: rankRulesForTask(input.task, activePackIds, cwd).map(toRankedWorkflowSelection)
       };
     }
   });
@@ -177,6 +386,48 @@ function createToolRegistry(
   });
 
   registerFirstPartyTools(tool => registry.registerTool(tool));
+
+  const pluginTools = loadResolvedWorkflowPluginTools(cwd);
+  const availableToolIds = new Set([
+    ...registry.listTools().map(tool => tool.toolId),
+    ...pluginTools.map(tool => tool.runtimeToolId)
+  ]);
+
+  for (const pluginTool of pluginTools) {
+    if (!availableToolIds.has(pluginTool.targetToolId)) {
+      continue;
+    }
+
+    registry.registerTool({
+      toolId: pluginTool.runtimeToolId,
+      title: pluginTool.title,
+      description: pluginTool.description,
+      category: "custom",
+      requiresPermission: ["tool"],
+      execute: async (input: unknown, context: ToolExecutionContext) => {
+        const pluginToolStack = readPluginToolStack(context.metadata);
+        if (pluginToolStack.includes(pluginTool.runtimeToolId)) {
+          const cycleStartIndex = pluginToolStack.indexOf(pluginTool.runtimeToolId);
+          const cycle = [...pluginToolStack.slice(cycleStartIndex), pluginTool.runtimeToolId];
+          throw new Error(`Plugin tool cycle detected: ${cycle.join(" -> ")}.`);
+        }
+
+        const mergedInput = mergeToolInput(pluginTool.input, input);
+        const result = await registry.invoke(pluginTool.targetToolId, mergedInput, {
+          ...context,
+          metadata: {
+            ...(context.metadata ?? {}),
+            [PLUGIN_TOOL_STACK_METADATA_KEY]: [...pluginToolStack, pluginTool.runtimeToolId]
+          }
+        });
+        if (!result.ok) {
+          throw new Error(result.error ?? `Plugin tool ${pluginTool.runtimeToolId} failed.`);
+        }
+        return result.output;
+      }
+    });
+  }
+
   return registry;
 }
 
@@ -185,6 +436,7 @@ export function createPersistedRuntimeContext(
   executionProfile: ExecutionProfile,
   permissionOverrides: RuntimePermissionOverrides = {}
 ): PersistedRuntimeContext {
+  const config = loadRuntimeConfig(cwd, executionProfile);
   const stateStore = new FileRuntimeStateStore(cwd);
   stateStore.ensureLayout();
   const session = stateStore.loadOrCreateSession();
@@ -202,7 +454,33 @@ export function createPersistedRuntimeContext(
     stateStore.loadPermissionLog()
   );
   const mcpRuntime = createMcpRuntime(cwd, executionProfile.host, process.env);
-  const toolRegistry = createToolRegistry(executionProfile, mcpRuntime, request =>
+  const seededMemories = stateStore.listMemory();
+  const memoryProvider = config.memory.enabled
+    ? config.memory.provider === "simplemem"
+      ? new SimpleMemAdapter({
+          delegate: new InMemoryMemoryProvider({
+            providerId: "simplemem-local-seed",
+            displayName: "SimpleMem Local Seed",
+            kind: "adapter",
+            seed: seededMemories
+          })
+        })
+      : new InMemoryMemoryProvider({
+          providerId: "local-memory",
+          displayName: "Local Memory",
+          kind: "local",
+          seed: seededMemories
+        })
+    : undefined;
+  const sessionMemory = memoryProvider
+    ? new SessionMemory({
+        provider: memoryProvider,
+        sessionId: session.sessionId,
+        defaultTags: config.memory.defaultTags,
+        defaultRetention: config.memory.retention
+      })
+    : undefined;
+  const toolRegistry = createToolRegistry(cwd, executionProfile, mcpRuntime, request =>
     persistPermissionDecision(permissionSystem, stateStore, request)
   );
 
@@ -214,9 +492,25 @@ export function createPersistedRuntimeContext(
     stateStore.saveProgress(progressTracker.recordTaskEvent(event));
     runtimeSession = reconcileSession(runtimeSession, taskManager.listTasks());
     stateStore.saveSession(runtimeSession);
+
+    if (sessionMemory && event.type === "completed") {
+      const memory = sessionMemory.remember({
+        summary: `Completed task: ${task.goal}`,
+        content: renderTaskMemoryContent(task),
+        taskId: task.taskId,
+        resultRef: task.result?.outputRef,
+        sourceKind: "task",
+        sourceLabel: "task completion",
+        importance: config.memory.defaultImportance,
+        tags: ["task", task.status]
+      });
+      stateStore.saveMemory(memory);
+    }
   });
 
   return {
+    cwd,
+    config,
     executionProfile,
     stateStore,
     session: runtimeSession,
@@ -224,6 +518,8 @@ export function createPersistedRuntimeContext(
     progressTracker,
     permissionSystem,
     mcpRuntime,
+    memoryProvider,
+    sessionMemory,
     toolRegistry,
     executor: new SimpleTaskExecutor(taskManager, progressTracker, toolRegistry)
   };
@@ -262,6 +558,115 @@ export async function invokeRuntimeTool(
     workingDirectory: options.workingDirectory,
     metadata: options.metadata
   });
+}
+
+export function saveRuntimeResult(
+  context: PersistedRuntimeContext,
+  input: Parameters<FileRuntimeStateStore["saveResult"]>[0]
+): ResultRecord {
+  const result = context.stateStore.saveResult(input);
+  if (context.sessionMemory) {
+    const memory = context.sessionMemory.rememberResult({
+      summary: `Stored result: ${result.summary}`,
+      content: renderResultMemoryContent(result),
+      taskId: result.taskId,
+      resultRef: result.resultRef,
+      sourceLabel: "result persistence",
+      importance: context.config.memory.defaultImportance,
+      tags: ["result", result.kind, result.toolId ?? "runtime"]
+    });
+    context.stateStore.saveMemory(memory);
+  }
+  return result;
+}
+
+export function listRuntimeMemory(
+  context: PersistedRuntimeContext,
+  query: Omit<MemoryQuery, "sessionId"> = {}
+): MemoryAttachment[] {
+  if (!context.sessionMemory) {
+    return [];
+  }
+
+  return context.sessionMemory.attachForTask({
+    ...query,
+    limit: query.limit ?? context.config.memory.attachLimit
+  });
+}
+
+export function getRuntimeMemory(
+  context: PersistedRuntimeContext,
+  memoryRef: string
+) {
+  return context.stateStore.loadMemory(memoryRef);
+}
+
+export async function runWorkflowHooks(
+  context: PersistedRuntimeContext,
+  event: WorkflowHookEvent,
+  payload: Record<string, unknown>
+): Promise<WorkflowHookRunResult> {
+  const hooks = loadResolvedWorkflowHooks(context.cwd).filter(hook => hook.enabled && hook.event === event);
+  const executions: WorkflowHookExecution[] = [];
+  let haltedByHookId: string | undefined;
+  let abortReason: string | undefined;
+
+  for (const hook of hooks) {
+    const failurePolicy = hook.onFailure ?? "continue";
+    const input = renderHookInput(hook.input, {
+      event: payload,
+      hook: {
+        hookId: hook.hookId,
+        title: hook.title,
+        event: hook.event,
+        toolId: hook.toolId,
+        onFailure: failurePolicy,
+        source: hook.source,
+        pluginId: hook.pluginId
+      }
+    });
+    const result = await context.toolRegistry.invoke(hook.toolId, input, {
+      sessionId: context.session.sessionId,
+      taskId: typeof payload.taskId === "string" ? payload.taskId : undefined,
+      workingDirectory: context.cwd,
+      metadata: {
+        hookId: hook.hookId,
+        hookEvent: hook.event,
+        trigger: "workflow-hook"
+      }
+    });
+
+    const execution: WorkflowHookExecution = {
+      hookId: hook.hookId,
+      title: hook.title,
+      event: hook.event,
+      toolId: hook.toolId,
+      status: classifyHookStatus(result),
+      failurePolicy,
+      source: hook.source,
+      pluginId: hook.pluginId,
+      path: hook.path,
+      invocationId: result.invocationId,
+      error: result.error,
+      outputPreview: result.ok ? previewHookOutput(result.output) : undefined,
+      completedAt: result.completedAt
+    };
+    executions.push(execution);
+
+    if (execution.status !== "completed" && failurePolicy === "abort") {
+      haltedByHookId = execution.hookId;
+      abortReason = `Hook "${execution.hookId}" failed during ${event} and requested abort.`;
+      break;
+    }
+  }
+
+  return {
+    event,
+    executions,
+    halted: Boolean(haltedByHookId),
+    haltedByHookId,
+    abortReason
+  };
 }
 
 /**

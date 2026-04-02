@@ -23,6 +23,7 @@
   "dependencies": {
     "@supercode/core": "0.1.0",
     "@supercode/detect": "0.1.0",
+    "@supercode/memory": "0.1.0",
     "@supercode/mcp": "0.1.0",
     "@supercode/models": "0.1.0",
     "@supercode/permissions": "0.1.0",

@@ -22,7 +22,10 @@ export class SessionManager {
     this.serverId = config.serverId;
     this.config = config;
     this.cwd = cwd;
-    this.healthMonitor = new MCPHealthMonitor();
+    this.healthMonitor = new MCPHealthMonitor({
+      concurrencyLimit: config.concurrencyLimit,
+      queueLimit: config.queueLimit
+    });
   }
 
   public getSession(): MCPServerSession {
@@ -38,6 +41,24 @@ export class SessionManager {
 
   private transitionState(newState: MCPConnectionState): void {
     this.state = this.healthMonitor.evaluateStateTransition(newState);
+  }
+
+  private quarantine(reason: string): void {
+    this.state = "quarantined";
+
+    for (const pending of this.pendingRequests.values()) {
+      pending.reject(new Error(reason));
+    }
+    this.pendingRequests.clear();
+
+    if (this.child && !this.child.killed) {
+      this.child.kill();
+    }
+  }
+
+  private isQuarantineError(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return /capability schema violation|malformed protocol frame|capability mismatch|security policy violation/i.test(message);
   }
 
   public recordSuccess(latencyMs?: number): void {
@@ -86,8 +107,12 @@ export class SessionManager {
       this.healthMonitor.recordSuccess();
 
     } catch (error) {
-      this.healthMonitor.recordFailure(error instanceof Error ? error : String(error));
-      this.transitionState("degraded");
+      if (this.isQuarantineError(error)) {
+        this.quarantine(error instanceof Error ? error.message : String(error));
+      } else {
+        this.healthMonitor.recordFailure(error instanceof Error ? error : String(error));
+        this.transitionState("degraded");
+      }
       await this.disconnect();
       throw error;
     }
@@ -152,7 +177,8 @@ export class SessionManager {
           }
         }
       } catch {
-        // Not JSON, skip
+        this.quarantine("Malformed protocol frame received from MCP server.");
+        return;
       }
     }
   }
@@ -169,7 +195,14 @@ export class SessionManager {
       }
       if (message.method === "tools/call" && message.params && typeof message.params === "object") {
         const { name, arguments: args } = message.params as any;
-        if (name === "echo") return Promise.resolve({ jsonrpc: "2.0", id, result: { serverId: this.serverId, toolName: name, arguments: args } });
+        if (name === "echo") {
+          const delayMs = typeof args?.delayMs === "number" ? Math.max(0, Math.floor(args.delayMs)) : 0;
+          return new Promise(resolve => {
+            setTimeout(() => {
+              resolve({ jsonrpc: "2.0", id, result: { serverId: this.serverId, toolName: name, arguments: args } });
+            }, delayMs);
+          });
+        }
         if (name === "fail") return Promise.reject(new Error(args?.message || "Builtin MCP tool fail failed."));
       }
       return Promise.resolve({ jsonrpc: "2.0", id, result: { capabilities: { tools: [] } } });

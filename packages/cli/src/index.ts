@@ -13,6 +13,7 @@ import type {
   SessionState,
   TaskProgressSnapshot,
   TaskRecord,
+  WorkflowHookRunResult,
   WorkflowPackSummary,
   WorkflowRecommendation
 } from "@supercode/core";
@@ -24,19 +25,31 @@ import { ModelCatalog, BudgetPolicy } from "@supercode/models";
 import {
   getWorkflowPack,
   installWorkflowPack,
+  installRecommendedWorkflowPacks,
   listWorkflowPackSummaries,
+  listWorkflowPlugins,
+  loadResolvedWorkflowCommands,
+  loadResolvedWorkflowRunSteps,
+  loadWorkflowExtensionState,
   loadInstalledPackState,
   recommendWorkflowPacks,
   searchRules,
   searchSkills,
+  syncWorkflowPackState,
+  validateWorkflowExtensions,
   uninstallWorkflowPack
 } from "@supercode/workflows";
+import { getFirstPartyTools } from "@supercode/tools";
 import {
   createPersistedRuntimeContext,
   evaluateRuntimePermission,
+  getRuntimeMemory,
   getCompletedStepIds,
   getRuntimeSession,
   invokeRuntimeTool,
+  listRuntimeMemory,
+  runWorkflowHooks,
+  saveRuntimeResult,
   type McpInvokeInput,
   type WorkflowMatchOutput
 } from "./runtime.js";
@@ -54,6 +67,25 @@ type RuntimeState = {
   availablePacks: WorkflowPackSummary[];
   mcpSummary: ReturnType<typeof detectMcpSupport>;
 };
+
+const BUILTIN_COMMAND_NAMES = [
+  "help",
+  "doctor",
+  "init",
+  "run",
+  "task",
+  "session",
+  "permission",
+  "result",
+  "memory",
+  "mcp",
+  "extension",
+  "plugin",
+  "pack",
+  "skill",
+  "rule",
+  "model"
+];
 
 function getDefaultIo(): CliIo {
   return {
@@ -103,12 +135,20 @@ function renderHelp(): string {
     "  supercode permission show",
     "  supercode result list",
     "  supercode result show <result-id>",
+    "  supercode memory list [query]",
+    "  supercode memory show <memory-id>",
     "  supercode mcp list",
     "  supercode mcp invoke <server-id> <tool-name> [json-args]",
+    "  supercode extension list",
+    "  supercode extension validate",
+    "  supercode plugin list",
+    "  supercode <plugin-command> [args]",
     "  supercode pack list",
     "  supercode pack recommend",
+    "  supercode pack recommend --apply",
     "  supercode pack install <pack-id>",
     "  supercode pack uninstall <pack-id>",
+    "  supercode pack sync",
     "  supercode skill search <query>",
     "  supercode rule search <query>",
     "  supercode model list",
@@ -157,6 +197,69 @@ function renderPackStatuses(pack: WorkflowPackSummary, state: RuntimeState): str
   return statuses.join(", ");
 }
 
+function renderExtensionSummaryLine(cwd: string): string {
+  const extensionState = loadWorkflowExtensionState(cwd);
+  if (!extensionState) {
+    return "Extensions: (none)";
+  }
+
+  const plugins = listWorkflowPlugins(cwd);
+  return `Extensions: packs=${extensionState.packs.length} skills=${extensionState.skills.length} rules=${extensionState.rules.length} plugins=${plugins.length}`;
+}
+
+function mergeCommandInput(defaultInput: unknown, providedInput: unknown): unknown {
+  if (providedInput === undefined) {
+    return structuredClone(defaultInput);
+  }
+  if (defaultInput === undefined) {
+    return structuredClone(providedInput);
+  }
+  if (
+    defaultInput &&
+    providedInput &&
+    typeof defaultInput === "object" &&
+    typeof providedInput === "object" &&
+    !Array.isArray(defaultInput) &&
+    !Array.isArray(providedInput)
+  ) {
+    const merged: Record<string, unknown> = { ...(defaultInput as Record<string, unknown>) };
+    for (const [key, value] of Object.entries(providedInput as Record<string, unknown>)) {
+      merged[key] = mergeCommandInput((defaultInput as Record<string, unknown>)[key], value);
+    }
+    return merged;
+  }
+
+  return structuredClone(providedInput);
+}
+
+function parsePluginCommandInput(
+  argsMode: "none" | "text" | "json" | "argv",
+  args: string[]
+): unknown {
+  if (argsMode === "none") {
+    return undefined;
+  }
+  if (argsMode === "text") {
+    const text = args.join(" ").trim();
+    return {
+      text,
+      content: text,
+      argv: [...args]
+    };
+  }
+  if (argsMode === "argv") {
+    return {
+      argv: [...args],
+      text: args.join(" ").trim()
+    };
+  }
+  if (args.length === 0) {
+    return undefined;
+  }
+
+  return JSON.parse(args.join(" "));
+}
+
 function parseInitArgs(args: string[], cwd: string): { targetDir: string; force: boolean } {
   const force = args.includes("--force");
   const pathArg = args.find(arg => !arg.startsWith("-"));
@@ -174,7 +277,12 @@ function renderRankedMatches(matches: Array<{ title: string; score: number }>): 
 
   return matches
     .slice(0, 3)
-    .map(match => `${match.title} [${match.score}]`)
+    .map(match => {
+      const withSource = match as { title: string; score: number; sourceType?: "pack" | "plugin"; sourceId?: string };
+      const source =
+        withSource.sourceType && withSource.sourceId ? ` <${withSource.sourceType}:${withSource.sourceId}>` : "";
+      return `${match.title} [${match.score}]${source}`;
+    })
     .join(", ");
 }
 
@@ -222,6 +330,23 @@ function renderSession(session: SessionState): string[] {
     `Recent tasks: ${session.recentTaskIds.join(", ") || "(none)"}`,
     `Results: ${session.resultRefs.join(", ") || "(none)"}`
   ];
+}
+
+function renderMemoryStatus(enabled: boolean, attachmentCount: number): string {
+  return enabled
+    ? `Memory: enabled, attached=${attachmentCount}`
+    : "Memory: disabled";
+}
+
+function renderMemoryListLine(memory: {
+  memoryRef: string;
+  summary: string;
+  provenance: { sourceKind: string; taskId?: string };
+  score?: number;
+}): string {
+  const score = memory.score !== undefined ? ` score=${memory.score}` : "";
+  const task = memory.provenance.taskId ? ` task=${memory.provenance.taskId}` : "";
+  return `${memory.memoryRef}: ${memory.summary} [${memory.provenance.sourceKind}]${task}${score}`;
 }
 
 function summarizeWorkflowOutput(task: string, output: WorkflowMatchOutput): string {
@@ -272,6 +397,39 @@ function renderPermissionLog(entries: PermissionLogEntry[]): string[] {
   ];
 }
 
+function renderHookSummary(result: WorkflowHookRunResult): string {
+  const counts = {
+    completed: result.executions.filter(execution => execution.status === "completed").length,
+    blocked: result.executions.filter(execution => execution.status === "blocked").length,
+    failed: result.executions.filter(execution => execution.status === "failed").length
+  };
+  return `Hooks ${result.event}: completed=${counts.completed} blocked=${counts.blocked} failed=${counts.failed} halted=${result.halted ? "yes" : "no"}`;
+}
+
+function renderHookExecutionLine(result: WorkflowHookRunResult["executions"][number]): string {
+  const parts = [
+    `hook ${result.hookId}`,
+    `[${result.status}]`,
+    `policy=${result.failurePolicy}`,
+    `source=${result.source}`,
+    result.pluginId ? `plugin=${result.pluginId}` : "",
+    `tool=${result.toolId}`
+  ].filter(Boolean);
+  const errorSuffix = result.error ? ` error=${result.error}` : "";
+  return `${parts.join(" ")}${errorSuffix}`;
+}
+
+function emitHookReport(io: CliIo, result: WorkflowHookRunResult): void {
+  if (result.executions.length === 0) {
+    return;
+  }
+
+  io.out(renderHookSummary(result));
+  for (const execution of result.executions) {
+    io.out(renderHookExecutionLine(execution));
+  }
+}
+
 export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo = getDefaultIo()): Promise<number> {
   const [command, subcommand, ...rest] = argv;
   const cwd = process.cwd();
@@ -307,6 +465,7 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
     });
     io.out(`Initialized Supercode in ${targetDir}`);
     io.out(`Installed packs: ${result.installedPackIds.join(", ") || "(none)"}`);
+    io.out(renderExtensionSummaryLine(targetDir));
     io.out(`Created files: ${result.createdFiles.length}`);
     io.out(`Selected packs: ${result.executionProfile.recommendedPackIds.join(", ") || "(none)"}`);
     return 0;
@@ -330,8 +489,14 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
 
     if (!task) {
       io.out(`Runtime tools: ${runtime.toolRegistry.listTools().map(tool => tool.toolId).join(", ") || "(none)"}`);
+      io.out(renderMemoryStatus(Boolean(runtime.sessionMemory), 0));
       return 0;
     }
+
+    const memoryAttachments = listRuntimeMemory(runtime, {
+      text: task,
+      limit: runtime.config.memory.attachLimit
+    });
 
     const taskRecord = runtime.taskManager.createTask({
       goal: task,
@@ -351,6 +516,36 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
     );
 
     io.out(`Started task ${runningTask.taskId}`);
+    io.out(renderMemoryStatus(Boolean(runtime.sessionMemory), memoryAttachments.length));
+
+    const beforeHooks = await runWorkflowHooks(runtime, "run.before", {
+      task,
+      taskId: runningTask.taskId,
+      activePackIds
+    });
+    emitHookReport(io, beforeHooks);
+    if (beforeHooks.halted) {
+      const message = beforeHooks.abortReason ?? `Hooks ${beforeHooks.event} aborted command execution.`;
+      runtime.stateStore.saveProgress(
+        runtime.progressTracker.record({
+          taskId: runningTask.taskId,
+          type: "message",
+          status: "failed",
+          message
+        })
+      );
+      runtime.taskManager.failTask(runningTask.taskId, {
+        message,
+        retryable: false,
+        details: {
+          hookEvent: beforeHooks.event,
+          haltedByHookId: beforeHooks.haltedByHookId,
+          executions: beforeHooks.executions
+        }
+      });
+      io.err(message);
+      return 1;
+    }
 
     const workflowResult = await invokeRuntimeTool(
       runtime,
@@ -401,13 +596,14 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
     });
     const mcpSummary = (mcpResult.ok ? mcpResult.output : state.mcpSummary) as McpRuntimeSummary;
     const resultSummary = summarizeWorkflowOutput(task, workflowOutput);
-    const resultRecord = runtime.stateStore.saveResult({
+    const resultRecord = saveRuntimeResult(runtime, {
       kind: "tool-result",
       taskId: runningTask.taskId,
       toolId: workflowResult.toolId,
       summary: resultSummary,
       data: {
         workflow: workflowOutput,
+        memory: memoryAttachments,
         mcp: mcpSummary,
         invocations: {
           workflow: {
@@ -423,10 +619,10 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
       }
     });
 
-    // Build a simple execution plan: git.status + optional build/test scripts.
+    // Build the execution plan from defaults plus matching plugin-contributed run steps.
     const hasNodeModules = existsSync(path.join(state.executionProfile.project.projectRoot, "node_modules"));
-
-    const planSteps = [
+    const pluginRunSteps = loadResolvedWorkflowRunSteps(cwd, task);
+    const defaultPlanSteps = [
       {
         stepId: randomUUID(),
         toolId: "git.status",
@@ -459,6 +655,45 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
           ]
         : [])
     ];
+    const beforeDefaultPluginSteps = pluginRunSteps
+      .filter(step => step.placement === "before-defaults")
+      .map(step => ({
+        stepId: randomUUID(),
+        toolId: step.toolId,
+        title: step.title,
+        description: step.description,
+        input: step.input,
+        metadata: {
+          source: "plugin-run-step",
+          pluginId: step.pluginId,
+          pluginTitle: step.pluginTitle,
+          pluginStepId: step.stepId,
+          path: step.path,
+          placement: step.placement
+        }
+      }));
+    const afterDefaultPluginSteps = pluginRunSteps
+      .filter(step => step.placement !== "before-defaults")
+      .map(step => ({
+        stepId: randomUUID(),
+        toolId: step.toolId,
+        title: step.title,
+        description: step.description,
+        input: step.input,
+        metadata: {
+          source: "plugin-run-step",
+          pluginId: step.pluginId,
+          pluginTitle: step.pluginTitle,
+          pluginStepId: step.stepId,
+          path: step.path,
+          placement: step.placement
+        }
+      }));
+    const planSteps = [
+      ...beforeDefaultPluginSteps,
+      ...defaultPlanSteps,
+      ...afterDefaultPluginSteps
+    ];
 
     const plan = {
       planRef: randomUUID(),
@@ -467,7 +702,8 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
       createdAt: new Date().toISOString(),
       metadata: {
         command: "run",
-        activePackIds
+        activePackIds,
+        pluginRunStepIds: pluginRunSteps.map(step => `${step.pluginId}:${step.stepId}`)
       }
     };
 
@@ -485,7 +721,7 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
       return 1;
     }
 
-    const executionResult = runtime.stateStore.saveResult({
+    const executionResult = saveRuntimeResult(runtime, {
       kind: "task-output",
       taskId: runningTask.taskId,
       toolId: "executor",
@@ -494,6 +730,7 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
         execution: execOutcome,
         plan,
         workflow: workflowOutput,
+        memory: memoryAttachments,
         mcp: mcpSummary
       }
     });
@@ -508,12 +745,30 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
       }
     });
 
+    const afterHooks = await runWorkflowHooks(runtime, "run.after", {
+      task,
+      taskId: completedTask.taskId,
+      resultRef: resultRecord.resultRef,
+      executionResultRef: executionResult.resultRef,
+      activePackIds,
+      success: true
+    });
     io.out(`Completed task ${completedTask.taskId}`);
     io.out(`Saved result ${resultRecord.resultRef}`);
     io.out(`Task: ${task}`);
     io.out(renderCompactMcpState(mcpSummary));
     io.out(`Matched skills: ${renderRankedMatches(workflowOutput.matchedSkills)}`);
     io.out(`Matched rules: ${renderRankedMatches(workflowOutput.matchedRules)}`);
+    if (pluginRunSteps.length > 0) {
+      io.out(
+        `Plugin run steps: ${pluginRunSteps.map(step => `${step.title} <plugin:${step.pluginId}> [${step.placement}]`).join(", ")}`
+      );
+    }
+    emitHookReport(io, afterHooks);
+    if (afterHooks.halted) {
+      io.err(afterHooks.abortReason ?? `Hooks ${afterHooks.event} aborted command completion.`);
+      return 1;
+    }
     return 0;
   }
 
@@ -692,7 +947,7 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
         return 1;
       }
 
-      const resultRecord = runtime.stateStore.saveResult({
+      const resultRecord = saveRuntimeResult(runtime, {
         kind: "task-output",
         taskId: startedTask.taskId,
         toolId: "executor",
@@ -781,7 +1036,7 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
         return 1;
       }
 
-      const resultRecord = runtime.stateStore.saveResult({
+      const resultRecord = saveRuntimeResult(runtime, {
         kind: "task-output",
         taskId: resumedTask.taskId,
         toolId: "executor",
@@ -902,6 +1157,68 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
         : "";
       io.out(`${result.resultRef}: ${result.summary} [${result.kind}]${result.taskId ? ` task=${result.taskId}` : ""}${artifact}${preview}`);
     }
+    return 0;
+  }
+
+  if (command === "memory" && subcommand === "list") {
+    const state = buildRuntimeState(cwd);
+    const runtime = createPersistedRuntimeContext(cwd, state.executionProfile);
+    const query = rest.join(" ").trim();
+
+    if (runtime.sessionMemory) {
+      const memories = listRuntimeMemory(runtime, query ? { text: query } : {});
+      if (memories.length === 0) {
+        io.out("Memory: (none)");
+        return 0;
+      }
+
+      for (const memory of memories) {
+        io.out(renderMemoryListLine(memory));
+      }
+      return 0;
+    }
+
+    const persisted = runtime.stateStore.listMemory({
+      sessionId: runtime.session.sessionId,
+      text: query || undefined
+    });
+    if (persisted.length === 0) {
+      io.out("Memory is disabled and there are no persisted records for this session.");
+      return 0;
+    }
+
+    io.out("Memory is disabled; showing persisted records for this session.");
+    for (const memory of persisted) {
+      io.out(renderMemoryListLine(memory));
+    }
+    return 0;
+  }
+
+  if (command === "memory" && subcommand === "show") {
+    const memoryRef = rest[0];
+    if (!memoryRef) {
+      io.err("Usage: supercode memory show <memory-id>");
+      return 1;
+    }
+
+    const state = buildRuntimeState(cwd);
+    const runtime = createPersistedRuntimeContext(cwd, state.executionProfile);
+    const memory = getRuntimeMemory(runtime, memoryRef);
+    if (!memory) {
+      io.err(`Unknown memory: ${memoryRef}`);
+      return 1;
+    }
+
+    io.out(`Memory: ${memory.memoryRef}`);
+    io.out(`Summary: ${memory.summary}`);
+    io.out(`Tags: ${memory.tags.join(", ") || "(none)"}`);
+    io.out(`Importance: ${memory.importance}`);
+    io.out(`Source: ${memory.provenance.sourceKind}`);
+    if (memory.provenance.taskId) io.out(`Task: ${memory.provenance.taskId}`);
+    if (memory.provenance.resultRef) io.out(`Result: ${memory.provenance.resultRef}`);
+    io.out(`Created: ${memory.createdAt}`);
+    io.out(`Updated: ${memory.updatedAt}`);
+    io.out(`Content: ${memory.content}`);
     return 0;
   }
 
@@ -1032,7 +1349,7 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
 
     const invocation = toolResult.output as McpInvocationResult;
     const resultSummary = summarizeMcpInvocation(input, invocation);
-    const resultRecord = runtime.stateStore.saveResult({
+    const resultRecord = saveRuntimeResult(runtime, {
       kind: "tool-result",
       taskId: runningTask.taskId,
       toolId: toolResult.toolId,
@@ -1079,6 +1396,67 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
     return 0;
   }
 
+  if (command === "extension" && subcommand === "list") {
+    const extensionState = loadWorkflowExtensionState(cwd);
+    if (!extensionState) {
+      io.out("Extensions: (none)");
+      return 0;
+    }
+
+    io.out(renderExtensionSummaryLine(cwd));
+    io.out(`Generated at: ${extensionState.generatedAt}`);
+    for (const pack of extensionState.packs) {
+      io.out(`${pack.packId} [${pack.installMode}]: skills=${pack.skillCount}, rules=${pack.ruleCount}`);
+    }
+    const plugins = listWorkflowPlugins(cwd);
+    io.out(`Plugins: ${plugins.length}`);
+    for (const plugin of plugins) {
+      io.out(
+        `plugin ${plugin.pluginId} [${plugin.enabled ? "enabled" : "disabled"}]: skills=${plugin.skillCount}, rules=${plugin.ruleCount}, tools=${plugin.toolCount}, runSteps=${plugin.runStepCount}, commands=${plugin.commandCount}, hooks=${plugin.hookCount}`
+      );
+    }
+    return 0;
+  }
+
+  if (command === "extension" && subcommand === "validate") {
+    const report = validateWorkflowExtensions(cwd, {
+      knownToolIds: [
+        "workflow.match",
+        "mcp.inspect",
+        "mcp.invoke",
+        ...getFirstPartyTools().map(tool => tool.toolId)
+      ],
+      reservedCommandNames: BUILTIN_COMMAND_NAMES
+    });
+
+    if (report.issues.length === 0) {
+      io.out("Extension validation passed.");
+      return 0;
+    }
+
+    io.out(`Extension validation: errors=${report.errorCount} warnings=${report.warningCount}`);
+    for (const issue of report.issues) {
+      const source = issue.sourceId ? `${issue.sourceType}:${issue.sourceId}` : issue.sourceType;
+      io.out(`${issue.severity.toUpperCase()} ${source} ${issue.path}: ${issue.message}`);
+    }
+    return report.ok ? 0 : 1;
+  }
+
+  if (command === "plugin" && subcommand === "list") {
+    const plugins = listWorkflowPlugins(cwd);
+    if (plugins.length === 0) {
+      io.out("Plugins: (none)");
+      return 0;
+    }
+
+    for (const plugin of plugins) {
+      io.out(
+        `${plugin.pluginId} [${plugin.enabled ? "enabled" : "disabled"}]: skills=${plugin.skillCount}, rules=${plugin.ruleCount}, tools=${plugin.toolCount}, runSteps=${plugin.runStepCount}, commands=${plugin.commandCount}, hooks=${plugin.hookCount} path=${plugin.path}`
+      );
+    }
+    return 0;
+  }
+
   if (command === "pack" && subcommand === "list") {
     const state = buildRuntimeState(cwd);
     for (const pack of state.availablePacks) {
@@ -1089,10 +1467,24 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
 
   if (command === "pack" && subcommand === "recommend") {
     const state = buildRuntimeState(cwd);
+    if (rest.includes("--apply")) {
+      const installed = installRecommendedWorkflowPacks(cwd, state.workflowRecommendation);
+      io.out(`Applied recommended packs. Installed set: ${installed.installedPackIds.join(", ") || "(none)"}`);
+      io.out(renderExtensionSummaryLine(cwd));
+      return 0;
+    }
+
     for (const packId of state.workflowRecommendation.recommendedPackIds) {
       const reasons = state.workflowRecommendation.reasons[packId] ?? [];
       io.out(`${packId}: ${reasons.join(" ") || "No recommendation rationale recorded."}`);
     }
+    return 0;
+  }
+
+  if (command === "pack" && subcommand === "sync") {
+    const synced = syncWorkflowPackState(cwd);
+    io.out(`Synced pack state. Installed set: ${synced.installedPackIds.join(", ") || "(none)"}`);
+    io.out(renderExtensionSummaryLine(cwd));
     return 0;
   }
 
@@ -1112,6 +1504,17 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
     try {
       const installed = installWorkflowPack(cwd, packId);
       io.out(`Installed pack ${packId}. Installed set: ${installed.installedPackIds.join(", ")}`);
+      const state = buildRuntimeState(cwd);
+      const runtime = createPersistedRuntimeContext(cwd, state.executionProfile);
+      const hookExecutions = await runWorkflowHooks(runtime, "pack.install.after", {
+        packId,
+        installedPackIds: installed.installedPackIds
+      });
+      emitHookReport(io, hookExecutions);
+      if (hookExecutions.halted) {
+        io.err(hookExecutions.abortReason ?? `Hooks ${hookExecutions.event} aborted command completion.`);
+        return 1;
+      }
       return 0;
     } catch (error) {
       io.err(error instanceof Error ? error.message : String(error));
@@ -1129,6 +1532,17 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
     try {
       const installed = uninstallWorkflowPack(cwd, packId);
       io.out(`Uninstalled pack ${packId}. Installed set: ${installed.installedPackIds.join(", ") || "(none)"}`);
+      const state = buildRuntimeState(cwd);
+      const runtime = createPersistedRuntimeContext(cwd, state.executionProfile);
+      const hookExecutions = await runWorkflowHooks(runtime, "pack.uninstall.after", {
+        packId,
+        installedPackIds: installed.installedPackIds
+      });
+      emitHookReport(io, hookExecutions);
+      if (hookExecutions.halted) {
+        io.err(hookExecutions.abortReason ?? `Hooks ${hookExecutions.event} aborted command completion.`);
+        return 1;
+      }
       return 0;
     } catch (error) {
       io.err(error instanceof Error ? error.message : String(error));
@@ -1143,7 +1557,7 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
       return 1;
     }
 
-    for (const skill of searchSkills(query)) {
+    for (const skill of searchSkills(query, cwd)) {
       io.out(`${skill.skillId}: ${skill.summary}`);
     }
     return 0;
@@ -1156,9 +1570,107 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
       return 1;
     }
 
-    for (const rule of searchRules(query)) {
+    for (const rule of searchRules(query, cwd)) {
       io.out(`${rule.ruleId}: ${rule.summary}`);
     }
+    return 0;
+  }
+
+  const pluginCommand = loadResolvedWorkflowCommands(cwd).find(candidate => candidate.commandName === command);
+  if (pluginCommand) {
+    let parsedInput: unknown;
+    try {
+      parsedInput = parsePluginCommandInput(pluginCommand.argsMode ?? "argv", [subcommand, ...rest].filter(Boolean));
+    } catch (error) {
+      io.err(
+        `Invalid input for plugin command ${pluginCommand.commandName}: ${error instanceof Error ? error.message : String(error)}`
+      );
+      return 1;
+    }
+
+    const state = buildRuntimeState(cwd);
+    const runtime = createPersistedRuntimeContext(cwd, state.executionProfile, {
+      allowCategories: ["shell", "filesystem", "tool", "session"]
+    });
+    const taskRecord = runtime.taskManager.createTask({
+      goal: `plugin command ${pluginCommand.commandName}`,
+      metadata: {
+        command: pluginCommand.commandName,
+        pluginId: pluginCommand.pluginId,
+        pluginCommandId: pluginCommand.commandId
+      }
+    });
+    const runningTask = runtime.taskManager.startTask(taskRecord.taskId);
+    runtime.stateStore.saveProgress(
+      runtime.progressTracker.record({
+        taskId: runningTask.taskId,
+        type: "message",
+        status: runningTask.status,
+        message: `Executing plugin command ${pluginCommand.commandName}.`
+      })
+    );
+
+    io.out(`Started task ${runningTask.taskId}`);
+
+    const toolResult = await invokeRuntimeTool(
+      runtime,
+      pluginCommand.toolId,
+      mergeCommandInput(pluginCommand.input, parsedInput),
+      {
+        taskId: runningTask.taskId,
+        workingDirectory: cwd,
+        metadata: {
+          command: pluginCommand.commandName,
+          pluginId: pluginCommand.pluginId,
+          pluginCommandId: pluginCommand.commandId,
+          pluginCommandPath: pluginCommand.path
+        }
+      }
+    );
+
+    if (!toolResult.ok) {
+      const message = toolResult.error ?? `Plugin command ${pluginCommand.commandName} failed.`;
+      runtime.taskManager.failTask(runningTask.taskId, {
+        message,
+        retryable: false,
+        details: {
+          toolId: toolResult.toolId,
+          invocationId: toolResult.invocationId,
+          pluginId: pluginCommand.pluginId,
+          commandName: pluginCommand.commandName
+        }
+      });
+      io.err(message);
+      return 1;
+    }
+
+    const resultSummary = `Plugin command ${pluginCommand.commandName} completed successfully.`;
+    const resultRecord = saveRuntimeResult(runtime, {
+      kind: "tool-result",
+      taskId: runningTask.taskId,
+      toolId: pluginCommand.toolId,
+      summary: resultSummary,
+      data: {
+        pluginId: pluginCommand.pluginId,
+        commandId: pluginCommand.commandId,
+        commandName: pluginCommand.commandName,
+        output: toolResult.output
+      }
+    });
+    const completedTask = runtime.taskManager.completeTask(runningTask.taskId, {
+      summary: resultSummary,
+      outputRef: resultRecord.resultRef,
+      data: {
+        resultRef: resultRecord.resultRef,
+        pluginId: pluginCommand.pluginId,
+        commandId: pluginCommand.commandId
+      }
+    });
+
+    io.out(`Completed task ${completedTask.taskId}`);
+    io.out(`Saved result ${resultRecord.resultRef}`);
+    io.out(`Plugin command: ${pluginCommand.commandName} <plugin:${pluginCommand.pluginId}>`);
+    io.out(`Tool: ${pluginCommand.toolId}`);
     return 0;
   }
 

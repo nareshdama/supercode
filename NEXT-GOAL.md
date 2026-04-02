@@ -1,31 +1,29 @@
-# Next Goal: Local Execution Kernel
+# Next Goal: Distribution and Install Experience
 
-Objective: make Supercode execute real repo tasks with safe, persisted results instead of only planning and matching workflows.
+Phase 6 is complete. The next active roadmap target is Phase 7 from `masterplan.md`.
 
-Status: M1 and M2 complete; active milestone is M3. See `NEXT-GOAL-M3.md` for the detailed work plan.
+Objective:
+- make Supercode easy to adopt through the CLI package, npm packages, and source checkout flows
 
-Scope (in):
-- First-party tools: `shell.exec` (bounded cwd), `fs.read`, `fs.write` (scoped), `git.status`, `project.build`, `project.test`.
-- Task executor: ordered steps, retries, cancellations, resumable state, progress events, permission gating.
-- Result pipeline: normalize outputs, truncate for display, persist full artifacts with `ResultRecord` refs.
-- CLI: `task retry`, `task resume`, `result list`, `result show`; integrate tool invocation outputs.
+Current status entering Phase 7:
+- The execution kernel, model control plane, MCP layer, memory layer, and workflow/extension layer are all in place.
+- `supercode init`, `doctor`, `run`, pack management, plugin loading, hooks, plugin tools, plugin run steps, and plugin commands are operational.
+- The scaffold now includes an editor-neutral project template with local workflow guidance and example extension files.
+- Phase 7 is now primarily about packaging, install-path polish, and smoke-test quality rather than new runtime architecture.
 
-Scope (out for now):
-- Subagents/fleet execution, hosted services, marketplace, memory/backends, rich UI.
+Primary deliverables:
+- npm publish flow
+- install-path cleanup for `supercode` and `npx supercode init`
+- standalone repo quick-start polish
+- Windows and Unix install guidance or scripts
+- package smoke tests across install modes
 
-Deliverables:
-- `@supercode/tools` extended with the first-party tools and schemas.
-- `@supercode/tasks` executor that runs tool steps with retries/timeouts and progress updates.
-- `@supercode/state` result storage for large outputs and artifacts.
-- CLI flow that starts tasks, runs tool plans, persists results, and supports retry/resume/list/show.
+Exit criteria:
+- fresh-machine smoke tests succeed for:
+- `npx supercode init`
+- `npm install @supercode/core`
+- clone-and-run standalone repo flow
 
-Milestones:
-- [x] M1: Tool definitions and permission categories finalized; executor skeleton running no-op steps.
-- [x] M2: Shell/fs/git/project tools implemented with scoped permissions and timeouts.
-- [ ] M3: Result persistence plus CLI `result list/show`; task retry/resume paths wired.
-- [ ] M4: End-to-end smoke: `supercode run <task>` generates tool actions, saves outputs, supports retry.
-
-Risks/notes:
-- Sandbox/permission alignment for shell/fs operations; avoid host-blocked commands.
-- Output size management and truncation vs. full artifact storage.
-- Deterministic execution order and idempotent retries to prevent duplicate side effects.
+Notes:
+- `NEXT-GOAL-M3.md` is retained as an implementation record for the completed resilient execution-kernel milestone.
+- Phase 6 workflow and extension work is considered complete enough to support packaging and adoption work.

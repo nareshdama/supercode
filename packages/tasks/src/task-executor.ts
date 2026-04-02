@@ -111,6 +111,7 @@ export class SimpleTaskExecutor implements TaskExecutor {
       const result = await this.tools.invoke(step.toolId, clone(step.input ?? {}), {
         taskId: plan.taskId,
         metadata: {
+          ...(step.metadata ?? {}),
           stepId: step.stepId,
           planCreatedAt: plan.createdAt,
           planRef: plan.planRef

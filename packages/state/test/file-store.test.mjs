@@ -214,3 +214,36 @@ test("FileRuntimeStateStore does not truncate small result data", () => {
   assert.equal(result.preview, JSON.stringify({ ok: true }));
   assert.equal(result.artifactRef, undefined);
 });
+
+test("FileRuntimeStateStore saves and queries memory records", () => {
+  const cwd = mkdtempSync(path.join(tmpdir(), "supercode-state-"));
+  const store = new FileRuntimeStateStore(cwd);
+
+  const memory = store.saveMemory({
+    content: "The repo uses file-backed runtime state under .supercode.",
+    summary: "Runtime state is persisted on disk.",
+    tags: ["state", "runtime"],
+    importance: 0.8,
+    provenance: {
+      sessionId: "session-1",
+      taskId: "task-1",
+      sourceKind: "task",
+      sourceLabel: "task completion"
+    },
+    retention: {
+      strategy: "count-bound",
+      maxEntries: 100
+    }
+  });
+
+  assert.equal(store.loadMemory(memory.memoryRef)?.summary, "Runtime state is persisted on disk.");
+
+  const matches = store.listMemory({
+    text: "file-backed",
+    tags: ["state"],
+    sessionId: "session-1"
+  });
+
+  assert.equal(matches.length, 1);
+  assert.equal(matches[0].memoryRef, memory.memoryRef);
+});

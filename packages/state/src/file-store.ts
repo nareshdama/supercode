@@ -2,6 +2,8 @@ import { mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync } from 
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type {
+  MemoryQuery,
+  MemoryRecord,
   PermissionLogEntry,
   ResultRecord,
   SessionState,
@@ -23,6 +25,7 @@ export interface RuntimeStateLayout {
   tasksDir: string;
   progressDir: string;
   resultsDir: string;
+  memoryDir: string;
   plansDir: string;
   artifactsDir: string;
   permissionsPath: string;
@@ -77,6 +80,7 @@ export function getRuntimeStateLayout(cwd: string): RuntimeStateLayout {
     tasksDir: path.join(supercodeDir, "tasks"),
     progressDir: path.join(supercodeDir, "progress"),
     resultsDir: path.join(supercodeDir, "results"),
+    memoryDir: path.join(supercodeDir, "memory"),
     plansDir: path.join(supercodeDir, "plans"),
     artifactsDir: path.join(supercodeDir, "artifacts"),
     permissionsPath: path.join(supercodeDir, "permissions.json")
@@ -95,6 +99,7 @@ export class FileRuntimeStateStore {
     mkdirSync(this.layout.tasksDir, { recursive: true });
     mkdirSync(this.layout.progressDir, { recursive: true });
     mkdirSync(this.layout.resultsDir, { recursive: true });
+    mkdirSync(this.layout.memoryDir, { recursive: true });
     mkdirSync(this.layout.plansDir, { recursive: true });
     mkdirSync(this.layout.artifactsDir, { recursive: true });
     return this.layout;
@@ -278,6 +283,78 @@ export class FileRuntimeStateStore {
       .map(result => clone(result as ResultRecord));
 
     return sortResults(results);
+  }
+
+  saveMemory(
+    input: Omit<MemoryRecord, "memoryRef" | "createdAt" | "updatedAt"> &
+      Partial<Pick<MemoryRecord, "memoryRef" | "createdAt" | "updatedAt">>
+  ): MemoryRecord {
+    this.ensureLayout();
+    const createdAt = input.createdAt ?? now();
+    const record: MemoryRecord = {
+      memoryRef: input.memoryRef ?? randomUUID(),
+      content: input.content,
+      summary: input.summary,
+      tags: [...new Set(input.tags)],
+      importance: input.importance,
+      createdAt,
+      updatedAt: input.updatedAt ?? createdAt,
+      provenance: clone(input.provenance),
+      retention: clone(input.retention),
+      metadata: input.metadata ? clone(input.metadata) : undefined
+    };
+
+    writeJson(path.join(this.layout.memoryDir, `${record.memoryRef}.json`), record);
+    return clone(record);
+  }
+
+  loadMemory(memoryRef: string): MemoryRecord | undefined {
+    const parsed = readJson<MemoryRecord>(path.join(this.layout.memoryDir, `${memoryRef}.json`));
+    return parsed ? clone(parsed) : undefined;
+  }
+
+  listMemory(query: MemoryQuery = {}): MemoryRecord[] {
+    if (!existsSync(this.layout.memoryDir)) {
+      return [];
+    }
+
+    const limit = typeof query.limit === "number" && query.limit > 0 ? Math.floor(query.limit) : undefined;
+    const normalizedText = query.text?.trim().toLowerCase();
+    const normalizedTags = query.tags?.map(tag => tag.trim().toLowerCase()).filter(Boolean) ?? [];
+
+    const matches = readdirSync(this.layout.memoryDir, { withFileTypes: true })
+      .filter(entry => entry.isFile() && entry.name.endsWith(".json"))
+      .map(entry => readJson<MemoryRecord>(path.join(this.layout.memoryDir, entry.name)))
+      .filter(Boolean)
+      .map(record => clone(record as MemoryRecord))
+      .filter(record => {
+        if (normalizedText) {
+          const haystack = `${record.summary}\n${record.content}`.toLowerCase();
+          if (!haystack.includes(normalizedText)) {
+            return false;
+          }
+        }
+
+        if (normalizedTags.length > 0) {
+          const recordTags = new Set(record.tags.map(tag => tag.toLowerCase()));
+          if (!normalizedTags.every(tag => recordTags.has(tag))) {
+            return false;
+          }
+        }
+
+        if (query.sessionId && record.provenance.sessionId !== query.sessionId) {
+          return false;
+        }
+
+        if (query.taskId && record.provenance.taskId !== query.taskId) {
+          return false;
+        }
+
+        return true;
+      })
+      .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+
+    return limit ? matches.slice(0, limit) : matches;
   }
 
   // --- Plan persistence ---

@@ -17,6 +17,9 @@
       "path": "../detect"
     },
     {
+      "path": "../memory"
+    },
+    {
       "path": "../mcp"
     },
     {

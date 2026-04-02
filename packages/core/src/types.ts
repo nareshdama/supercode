@@ -131,6 +131,185 @@ export interface WorkflowRecommendation {
   reasons: Record<string, string[]>;
 }
 
+export interface WorkflowExtensionPackSummary {
+  packId: string;
+  title: string;
+  installMode: WorkflowPackInstallMode;
+  skillCount: number;
+  ruleCount: number;
+}
+
+export interface WorkflowSkillAsset {
+  packId: string;
+  skillId: string;
+  title: string;
+  path: string;
+}
+
+export interface WorkflowRuleAsset {
+  packId: string;
+  ruleId: string;
+  title: string;
+  severity: RuleSeverity;
+  path: string;
+}
+
+export interface WorkflowExtensionState {
+  version: 1;
+  generatedAt: string;
+  packs: WorkflowExtensionPackSummary[];
+  skills: WorkflowSkillAsset[];
+  rules: WorkflowRuleAsset[];
+}
+
+export type WorkflowHookEvent = "run.before" | "run.after" | "pack.install.after" | "pack.uninstall.after";
+export type WorkflowHookExecutionStatus = "completed" | "blocked" | "failed";
+export type WorkflowHookFailurePolicy = "continue" | "abort";
+
+export interface WorkflowHookDefinition {
+  hookId: string;
+  title: string;
+  event: WorkflowHookEvent;
+  toolId: string;
+  enabled: boolean;
+  onFailure?: WorkflowHookFailurePolicy;
+  input?: unknown;
+}
+
+export interface WorkflowHookManifest {
+  version: 1;
+  hooks: WorkflowHookDefinition[];
+}
+
+export interface WorkflowPluginManifest {
+  version: 1;
+  pluginId: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+  skills: SkillDefinition[];
+  rules: RuleDefinition[];
+  tools: WorkflowPluginToolDefinition[];
+  runSteps: WorkflowPluginRunStepDefinition[];
+  commands: WorkflowPluginCommandDefinition[];
+  hooks: WorkflowHookDefinition[];
+}
+
+export interface WorkflowPluginSummary {
+  pluginId: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+  skillCount: number;
+  ruleCount: number;
+  toolCount: number;
+  runStepCount: number;
+  commandCount: number;
+  hookCount: number;
+  path: string;
+}
+
+export interface WorkflowResolvedHookDefinition extends WorkflowHookDefinition {
+  source: "local" | "plugin";
+  pluginId?: string;
+  path: string;
+}
+
+export interface WorkflowPluginToolDefinition {
+  toolId: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+  targetToolId: string;
+  input?: unknown;
+}
+
+export interface WorkflowResolvedPluginToolDefinition extends WorkflowPluginToolDefinition {
+  runtimeToolId: string;
+  pluginId: string;
+  pluginTitle: string;
+  path: string;
+}
+
+export type WorkflowPluginRunStepPlacement = "before-defaults" | "after-defaults";
+
+export interface WorkflowPluginRunStepDefinition {
+  stepId: string;
+  title: string;
+  description: string;
+  toolId: string;
+  enabled: boolean;
+  placement?: WorkflowPluginRunStepPlacement;
+  whenTaskIncludes?: string[];
+  input?: unknown;
+}
+
+export interface WorkflowResolvedPluginRunStepDefinition extends WorkflowPluginRunStepDefinition {
+  pluginId: string;
+  pluginTitle: string;
+  path: string;
+}
+
+export type WorkflowPluginCommandArgsMode = "none" | "text" | "json" | "argv";
+
+export interface WorkflowPluginCommandDefinition {
+  commandId: string;
+  commandName: string;
+  title: string;
+  description: string;
+  toolId: string;
+  enabled: boolean;
+  argsMode?: WorkflowPluginCommandArgsMode;
+  input?: unknown;
+}
+
+export interface WorkflowResolvedPluginCommandDefinition extends WorkflowPluginCommandDefinition {
+  pluginId: string;
+  pluginTitle: string;
+  path: string;
+}
+
+export type WorkflowValidationSeverity = "error" | "warning";
+
+export interface WorkflowValidationIssue {
+  severity: WorkflowValidationSeverity;
+  sourceType: "local" | "plugin" | "runtime";
+  sourceId?: string;
+  path: string;
+  message: string;
+}
+
+export interface WorkflowValidationReport {
+  ok: boolean;
+  errorCount: number;
+  warningCount: number;
+  issues: WorkflowValidationIssue[];
+}
+
+export interface WorkflowHookExecution {
+  hookId: string;
+  title: string;
+  event: WorkflowHookEvent;
+  toolId: string;
+  status: WorkflowHookExecutionStatus;
+  failurePolicy: WorkflowHookFailurePolicy;
+  source: "local" | "plugin";
+  pluginId?: string;
+  path: string;
+  invocationId?: string;
+  error?: string;
+  outputPreview?: string;
+  completedAt: string;
+}
+
+export interface WorkflowHookRunResult {
+  event: WorkflowHookEvent;
+  executions: WorkflowHookExecution[];
+  halted: boolean;
+  haltedByHookId?: string;
+  abortReason?: string;
+}
+
 export interface ExecutionProfile {
   invocation: InvocationContext;
   host: HostCapabilities;
@@ -150,11 +329,21 @@ export interface PackInstallState {
   updatedAt: string;
 }
 
+export interface SupercodeMemoryConfig {
+  enabled: boolean;
+  provider: "local" | "simplemem";
+  attachLimit: number;
+  defaultTags: string[];
+  defaultImportance: number;
+  retention: MemoryRetentionPolicy;
+}
+
 export interface SupercodeConfig {
   version: 1;
   selectedPackIds: string[];
   verificationLevel: VerificationLevel;
   promptBudgetProfile: PromptBudgetProfile;
+  memory: SupercodeMemoryConfig;
   createdAt: string;
   updatedAt: string;
 }
@@ -188,6 +377,8 @@ export interface McpServerConfig {
   headers?: Record<string, string>;
   timeoutMs: number;
   retryCount: number;
+  concurrencyLimit: number;
+  queueLimit: number;
   notes: string[];
 }
 
@@ -391,6 +582,66 @@ export interface SessionState {
   activeTaskIds: string[];
   recentTaskIds: string[];
   resultRefs: string[];
+}
+
+export type MemorySourceKind = "task" | "result" | "user-note" | "system";
+
+export interface MemoryProvenance {
+  sessionId?: string;
+  taskId?: string;
+  resultRef?: string;
+  sourceKind: MemorySourceKind;
+  sourceLabel?: string;
+}
+
+export interface MemoryRetentionPolicy {
+  strategy: "keep-all" | "ttl" | "count-bound";
+  maxEntries?: number;
+  ttlDays?: number;
+}
+
+export interface MemoryRecord {
+  memoryRef: string;
+  content: string;
+  summary: string;
+  tags: string[];
+  importance: number;
+  createdAt: string;
+  updatedAt: string;
+  provenance: MemoryProvenance;
+  retention: MemoryRetentionPolicy;
+  metadata?: Record<string, unknown>;
+}
+
+export interface MemoryQuery {
+  text?: string;
+  tags?: string[];
+  sessionId?: string;
+  taskId?: string;
+  limit?: number;
+}
+
+export interface MemoryAttachment {
+  memoryRef: string;
+  summary: string;
+  content: string;
+  score: number;
+  provenance: MemoryProvenance;
+}
+
+export interface MemoryProviderInfo {
+  providerId: string;
+  displayName: string;
+  kind: "local" | "adapter";
+}
+
+export interface MemoryProvider {
+  getInfo(): MemoryProviderInfo;
+  add(record: Omit<MemoryRecord, "memoryRef" | "createdAt" | "updatedAt"> & Partial<Pick<MemoryRecord, "memoryRef" | "createdAt" | "updatedAt">>): MemoryRecord;
+  get(memoryRef: string): MemoryRecord | undefined;
+  list(query?: MemoryQuery): MemoryRecord[];
+  attach(query?: MemoryQuery): MemoryAttachment[];
+  prune(): MemoryRecord[];
 }
 
 export interface ResultRecord {

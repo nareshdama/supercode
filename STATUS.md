@@ -19,15 +19,46 @@
   - Backpressure: Concurrency limits and request queueing for all MCP transports.
   - Negotiation: MCP JSON-RPC `initialize` sequence for server profiles.
 
+- Phase 5 (Memory Layer) is operational:
+  - Local memory package: `@supercode/memory` provides in-process providers, retrieval scoring, retention helpers, and a SimpleMem adapter seam.
+  - Explicit config: `.supercode/config.json` now controls whether memory is enabled and which provider mode to use.
+  - Persistence: memory records are stored under `.supercode/memory/` and reloaded into the runtime on subsequent invocations.
+  - Runtime integration: `supercode run <task>` retrieves matching memories when enabled and stores new task/result memories automatically.
+  - CLI inspection: `memory list` and `memory show` expose stored memory records for the current session.
+  - Test suite verified (125 tests passing, 0 failures, 1 sandbox-blocked skip).
+
+- Phase 6 (Workflow and Extension Layer) is complete:
+  - Installed workflow packs now materialize generated skill and rule assets under `.supercode/extensions/generated/`.
+  - Extension inventory: `.supercode/extensions/manifest.json` records the generated local workflow baseline.
+  - Local overlay path: `.supercode/extensions/local/` is reserved for project-specific extension assets.
+  - CLI inspection: `extension list` shows the current generated extension baseline and per-pack counts.
+  - Local hooks: `.supercode/extensions/local/hooks.json` can execute lifecycle hooks through the standard tool registry.
+  - Initial hook events: `run.before`, `run.after`, `pack.install.after`, and `pack.uninstall.after`.
+  - Hook policy: hooks can now declare `onFailure: "continue" | "abort"` to either report failures or stop command completion.
+  - Plugin loader: discovers `.supercode/extensions/plugins/<plugin-id>/plugin.json` and merges enabled plugin hooks into runtime execution.
+  - Plugin workflow assets: enabled plugins can contribute skills and rules into CLI search and runtime task matching.
+  - Plugin tool adapters: enabled plugins can register tool wrappers that expose plugin-owned tool IDs over existing runtime tools and other plugin tools.
+  - Plugin run steps: enabled plugins can contribute matched execution steps into `supercode run`, before or after the default plan steps.
+  - Plugin commands: enabled plugins can contribute top-level CLI commands that invoke runtime tools directly.
+  - Plugin composition: plugin-local tool targets can use short local IDs and resolve into namespaced runtime tool IDs.
+  - Validation: `extension validate` checks local hooks, plugin manifests, duplicate workflow identifiers, invalid tool references, plugin tool cycles, malformed hook failure policies, invalid plugin run-step tool references, and conflicting plugin command definitions.
+  - Precedence: local hooks override plugin hooks with the same `hookId`.
+  - Runtime safety: plugin tool cycles are detected at invocation time and fail hook execution safely.
+  - Reporting: CLI hook output now includes per-hook status, source, policy, tool, and whether the event halted command completion.
+  - Plan persistence: plugin-expanded run steps are persisted into the normal execution plan and therefore participate in retry/resume.
+  - Command surface: plugin commands run through the same runtime tool registry and persist normal task/result state.
+  - Pack lifecycle: `pack recommend --apply` can reapply the current recommendation set, and `pack sync` reconciles `.supercode/packs.json` with the generated extension baseline.
+  - Editor-neutral template: scaffolded projects now include a root `README.md`, `.supercode/WORKFLOW.md`, and copy-safe local hook/plugin example files.
+  - Match provenance: workflow matches now carry pack-vs-plugin source metadata through runtime output.
+
 ## Next Phases
-- **Phase 5: Distributed Agent Mesh**
-  - Multi-Agent Protocol: Internal agent-to-agent capability discovery and handoffs.
-  - Session Delegation: Passing state and context between coordinated agents.
-  - Conflict Resolution: Logic for merging divergent workspace edits.
-  - Mesh Governance: Scoping child agents within parent-defined trust boundaries.
+- **Phase 7: Distribution and Install Experience**
+  - npm/package publish flow and smoke tests.
+  - standalone repo quick-start and install-path cleanup.
+  - Windows and Unix install/distribution polish.
 
 ## Known Risks/Watchpoints
 - Fallback chain timeouts: Ensure user experiences fail fast appropriately if API endpoints are dead.
 - Prompt variable leakage: Guard against unexpected prompt injections within the `.render()` method.
 
-For detailed Phase 4 plans, see `masterplan.md`. Overall roadmap remains there.
+For the full roadmap, see `masterplan.md`.

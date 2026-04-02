@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createServer } from "node:http";
-import { createMcpRuntime, loadMcpRuntimeConfig } from "../dist/index.js";
+import { createMcpRuntime, loadMcpRuntimeConfig, SessionManager } from "../dist/index.js";
 
 const HOST = {
   hostId: "generic-cli",
@@ -199,46 +199,35 @@ test("LocalMcpRuntime invokes HTTP MCP servers over JSON-RPC", async () => {
 test("LocalMcpRuntime enforces concurrency limits via health monitor", async () => {
   const cwd = mkdtempSync(path.join(tmpdir(), "supercode-mcp-"));
   writeBuiltinConfig(cwd, {
-    concurrencyLimit: 1 // Force sequential
+    concurrencyLimit: 1,
+    queueLimit: 1
   });
 
   const runtime = createMcpRuntime(cwd, HOST);
-  
-  // Start one request that we know will be "active" for a bit 
-  // (In builtin mock it's instant, so we might need a better test here or 
-  // just assume acquireConcurrency blocks correctly as per unit test in session)
-  // Actually, SessionManager.connect() or invoke() uses acquireConcurrency.
-  
+  const startedAt = Date.now();
   const results = await Promise.all([
-     runtime.invoke({ serverId: "local", toolName: "echo", arguments: { i: 1 } }),
-     runtime.invoke({ serverId: "local", toolName: "echo", arguments: { i: 2 } })
+    runtime.invoke({ serverId: "local", toolName: "echo", arguments: { i: 1, delayMs: 40 } }),
+    runtime.invoke({ serverId: "local", toolName: "echo", arguments: { i: 2, delayMs: 40 } }),
+    runtime.invoke({ serverId: "local", toolName: "echo", arguments: { i: 3, delayMs: 40 } })
   ]);
+  const durationMs = Date.now() - startedAt;
+  const succeeded = results.filter(result => result.ok);
+  const failed = results.filter(result => !result.ok);
 
-  assert.equal(results[0].ok, true);
-  assert.equal(results[1].ok, true);
+  assert.equal(succeeded.length, 2);
+  assert.equal(failed.length, 1);
+  assert.match(failed[0].error, /queue limit exceeded/i);
+  assert.ok(durationMs >= 70);
   await runtime.destroy();
 });
 
-test("LocalMcpRuntime rejects invocations for quarantined servers", async () => {
+test("LocalMcpRuntime rejects invocations for servers in backoff", async () => {
   const cwd = mkdtempSync(path.join(tmpdir(), "supercode-mcp-"));
-  // To trigger quarantine, we need a way to set it. 
-  // Current implementation only sets it via manual transition or backoff?
-  // Let's manually trigger backoff then check quarantine.
-  // Actually, only recordFailure moves to "down" status which session converts to "backoff".
-  // "quarantined" is a terminal state.
-  
   writeBuiltinConfig(cwd, {
     retryCount: 0
   });
 
   const runtime = createMcpRuntime(cwd, HOST);
-  // We can't easily force "quarantined" state from outside without a hacky way 
-  // but we can check if it respects it if we could set it.
-  // Let's check the code: session.ts send() rejects if state === "quarantined".
-  
-  // For now, let's test that enough failures lead to "backoff" and subsequent 
-  // requests fail.
-  
   for (let i = 0; i < 5; i++) {
     await runtime.invoke({ serverId: "local", toolName: "fail", arguments: { message: "crash" } });
   }
@@ -250,3 +239,91 @@ test("LocalMcpRuntime rejects invocations for quarantined servers", async () => 
   await runtime.destroy();
 });
 
+test("SessionManager transitions through degraded and back to ready", async () => {
+  const cwd = mkdtempSync(path.join(tmpdir(), "supercode-mcp-"));
+  const session = new SessionManager(
+    {
+      serverId: "local",
+      transport: "builtin",
+      enabled: true,
+      trusted: true,
+      timeoutMs: 50,
+      retryCount: 0,
+      concurrencyLimit: 1,
+      queueLimit: 1,
+      notes: []
+    },
+    cwd
+  );
+
+  await session.connect();
+  assert.equal(session.state, "ready");
+
+  session.recordFailure("recoverable transport error");
+  assert.equal(session.state, "degraded");
+
+  session.recordSuccess();
+  assert.equal(session.state, "ready");
+
+  await session.disconnect();
+});
+
+test("LocalMcpRuntime quarantines servers on capability schema violations", async () => {
+  const cwd = mkdtempSync(path.join(tmpdir(), "supercode-mcp-"));
+  const server = createServer((request, response) => {
+    let body = "";
+    request.on("data", chunk => body += chunk);
+    request.on("end", () => {
+      const payload = JSON.parse(body);
+      response.writeHead(200, { "content-type": "application/json" });
+
+      if (payload.method === "initialize") {
+        response.end(JSON.stringify({
+          jsonrpc: "2.0",
+          id: payload.id,
+          result: { capabilities: { tools: {} } }
+        }));
+        return;
+      }
+
+      if (payload.method === "tools/list") {
+        response.end(JSON.stringify({
+          jsonrpc: "2.0",
+          id: payload.id,
+          result: { tools: {} }
+        }));
+        return;
+      }
+
+      response.end(JSON.stringify({ jsonrpc: "2.0", id: payload.id, result: {} }));
+    });
+  });
+
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  const address = server.address();
+
+  try {
+    writeHttpConfig(cwd, `http://127.0.0.1:${address.port}/invoke`);
+    const runtime = createMcpRuntime(cwd, HOST);
+
+    const first = await runtime.invoke({
+      serverId: "remote",
+      toolName: "echo",
+      arguments: { message: "hello" }
+    });
+    assert.equal(first.ok, false);
+    assert.match(first.error, /capability schema violation/i);
+
+    const second = await runtime.invoke({
+      serverId: "remote",
+      toolName: "echo",
+      arguments: { message: "hello again" }
+    });
+    assert.equal(second.ok, false);
+    assert.match(second.error, /quarantined/i);
+
+    await runtime.destroy();
+  } finally {
+    server.close();
+  }
+});

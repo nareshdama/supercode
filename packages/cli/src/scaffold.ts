@@ -49,7 +49,7 @@ function createStateReadme(profile: ExecutionProfile): string {
   return [
     "# Supercode Project State",
     "",
-    "This directory stores Supercode's local configuration, pack installation state, and detection snapshots.",
+    "This directory stores Supercode's local configuration, pack installation state, generated extension assets, and detection snapshots.",
     "",
     "Detected environment:",
     `- Working directory: ${profile.project.cwd}`,
@@ -65,10 +65,171 @@ function createStateReadme(profile: ExecutionProfile): string {
     "Selected packs:",
     selectedPacks,
     "",
+    "Generated extension baseline:",
+    "- .supercode/extensions/manifest.json",
+    "- .supercode/extensions/generated/skills/",
+    "- .supercode/extensions/generated/rules/",
+    "- .supercode/extensions/local/",
+    "- .supercode/extensions/local/hooks.json",
+    "- .supercode/extensions/local/hooks.example.json",
+    "- .supercode/extensions/plugins/",
+    "- .supercode/extensions/plugins/plugin.example.json",
+    "- .supercode/WORKFLOW.md",
+    "",
     "Notes:",
     notes,
     ""
   ].join("\n");
+}
+
+function createProjectReadme(profile: ExecutionProfile): string {
+  const frameworks = profile.project.frameworks.length > 0 ? profile.project.frameworks.join(", ") : "none detected";
+
+  return [
+    `# ${path.basename(profile.project.projectRoot)}`,
+    "",
+    "This project was initialized with the Supercode editor-neutral starter template.",
+    "",
+    "Quick start:",
+    "- Install dependencies: `npm install`",
+    "- Inspect the environment: `npx supercode doctor`",
+    "- Run a task: `npx supercode run \"describe the next implementation step\"`",
+    "- Reapply recommended packs: `npx supercode pack recommend --apply`",
+    "- Reconcile generated workflow assets: `npx supercode pack sync`",
+    "",
+    "Detected profile:",
+    `- Primary language: ${profile.project.primaryLanguage}`,
+    `- Package manager: ${profile.project.packageManager}`,
+    `- Frameworks: ${frameworks}`,
+    "",
+    "Local workflow files live under `.supercode/`.",
+    "See `.supercode/WORKFLOW.md` for hook, plugin, and pack customization paths.",
+    ""
+  ].join("\n");
+}
+
+function createWorkflowGuide(profile: ExecutionProfile): string {
+  const selectedPacks = profile.recommendedPackIds.length > 0 ? profile.recommendedPackIds.join(", ") : "(none)";
+
+  return [
+    "# Local Workflow Guide",
+    "",
+    "This file documents the editor-neutral workflow entrypoints for the current project.",
+    "",
+    "Core commands:",
+    "- `npx supercode doctor`",
+    "- `npx supercode run \"<task>\"`",
+    "- `npx supercode extension validate`",
+    "- `npx supercode plugin list`",
+    "- `npx supercode pack recommend --apply`",
+    "- `npx supercode pack sync`",
+    "",
+    "Current recommended packs:",
+    `- ${selectedPacks}`,
+    "",
+    "Local customization paths:",
+    "- `.supercode/config.json` for runtime defaults such as memory settings",
+    "- `.supercode/extensions/local/hooks.json` for active local lifecycle hooks",
+    "- `.supercode/extensions/local/hooks.example.json` for a copy-safe hook template",
+    "- `.supercode/extensions/plugins/plugin.example.json` for a copy-safe plugin manifest template",
+    "",
+    "Operational notes:",
+    "- `pack recommend --apply` reapplies the currently detected recommendation set.",
+    "- `pack sync` rewrites `.supercode/packs.json` into normalized state and regenerates managed extension assets.",
+    "- Files under `.supercode/extensions/generated/` are managed by Supercode.",
+    "- Files under `.supercode/extensions/local/` are user-managed and preserved during pack sync.",
+    ""
+  ].join("\n");
+}
+
+function createHookTemplate(): string {
+  return `${JSON.stringify(
+    {
+      version: 1,
+      hooks: [
+        {
+          hookId: "write-run-summary",
+          title: "Write a run summary marker",
+          event: "run.after",
+          toolId: "fs.write",
+          enabled: false,
+          onFailure: "continue",
+          input: {
+            path: ".supercode/last-run.txt",
+            content: "task={{event.task}} result={{event.resultRef}} success={{event.success}}"
+          }
+        }
+      ]
+    },
+    null,
+    2
+  )}\n`;
+}
+
+function createPluginTemplate(): string {
+  return `${JSON.stringify(
+    {
+      version: 1,
+      pluginId: "example-plugin",
+      title: "Example Plugin",
+      description: "Copy this file to plugin.json inside a plugin directory and customize the fields below.",
+      enabled: true,
+      skills: [],
+      rules: [],
+      tools: [
+        {
+          toolId: "write-example-file",
+          title: "Write Example File",
+          description: "Wrap the built-in fs.write tool.",
+          enabled: true,
+          targetToolId: "fs.write",
+          input: {
+            path: ".supercode/example-plugin.txt"
+          }
+        }
+      ],
+      runSteps: [
+        {
+          stepId: "example-run-step",
+          title: "Example Run Step",
+          description: "Run before default plan steps when the task mentions release.",
+          toolId: "write-example-file",
+          enabled: false,
+          placement: "before-defaults",
+          whenTaskIncludes: ["release"],
+          input: {
+            content: "plugin run step executed"
+          }
+        }
+      ],
+      commands: [
+        {
+          commandId: "example-command",
+          commandName: "example-command",
+          title: "Example Command",
+          description: "Expose a plugin-owned CLI command.",
+          toolId: "write-example-file",
+          enabled: false,
+          argsMode: "text"
+        }
+      ],
+      hooks: [
+        {
+          hookId: "example-after-run",
+          title: "Example After-Run Hook",
+          event: "run.after",
+          toolId: "write-example-file",
+          enabled: false,
+          onFailure: "continue",
+          input: {
+            content: "hook result={{event.resultRef}}"
+          }
+        }
+      ]
+    },
+    null,
+    2
+  )}\n`;
 }
 
 function writeStarterTemplate(cwd: string, createdFiles: string[], skippedFiles: string[]): void {
@@ -146,6 +307,17 @@ export function initializeProject(cwd: string, options: InitProjectOptions): Ini
     selectedPackIds: executionProfile.recommendedPackIds,
     verificationLevel: executionProfile.verificationLevel,
     promptBudgetProfile: executionProfile.promptBudgetProfile,
+    memory: {
+      enabled: false,
+      provider: "local",
+      attachLimit: 5,
+      defaultTags: ["supercode"],
+      defaultImportance: 0.6,
+      retention: {
+        strategy: "count-bound",
+        maxEntries: 200
+      }
+    },
     createdAt: timestamp,
     updatedAt: timestamp
   };
@@ -158,11 +330,27 @@ export function initializeProject(cwd: string, options: InitProjectOptions): Ini
   writeJsonFile(configPath, config, force, createdFiles, skippedFiles);
   writeJsonFile(snapshotPath, snapshot, force, createdFiles, skippedFiles);
   writeTextFile(readmePath, createStateReadme(executionProfile), force, createdFiles, skippedFiles);
+  writeTextFile(path.join(cwd, ".supercode", "WORKFLOW.md"), createWorkflowGuide(executionProfile), force, createdFiles, skippedFiles);
 
   const installed = installRecommendedWorkflowPacks(cwd, {
     recommendedPackIds: executionProfile.recommendedPackIds,
     reasons: executionProfile.recommendationReasons
   });
+  writeTextFile(
+    path.join(cwd, ".supercode", "extensions", "local", "hooks.example.json"),
+    createHookTemplate(),
+    force,
+    createdFiles,
+    skippedFiles
+  );
+  writeTextFile(
+    path.join(cwd, ".supercode", "extensions", "plugins", "plugin.example.json"),
+    createPluginTemplate(),
+    force,
+    createdFiles,
+    skippedFiles
+  );
+  writeTextFile(path.join(cwd, "README.md"), createProjectReadme(executionProfile), false, createdFiles, skippedFiles);
 
   return {
     createdFiles,

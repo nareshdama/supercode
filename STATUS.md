@@ -52,10 +52,10 @@
   - Match provenance: workflow matches now carry pack-vs-plugin source metadata through runtime output.
 
 ## Next Phases
-- **Phase 7: Distribution and Install Experience**
-  - npm/package publish flow and smoke tests.
-  - standalone repo quick-start and install-path cleanup.
-  - Windows and Unix install/distribution polish.
+- **Phase 8: Hardening and Launch**
+  - coverage gates and performance profiling.
+  - security review and docs verification.
+  - release checklist plus example apps/tutorials.
 
 ## Known Risks/Watchpoints
 - Fallback chain timeouts: Ensure user experiences fail fast appropriately if API endpoints are dead.

@@ -1,29 +1,32 @@
-# Next Goal: Distribution and Install Experience
+# Next Goal: Hardening And Launch
 
-Phase 6 is complete. The next active roadmap target is Phase 7 from `masterplan.md`.
+Phase 7 is complete. The next active roadmap target is Phase 8 from `masterplan.md`.
 
 Objective:
-- make Supercode easy to adopt through the CLI package, npm packages, and source checkout flows
+- move Supercode from architecture-complete to production-ready
 
-Current status entering Phase 7:
-- The execution kernel, model control plane, MCP layer, memory layer, and workflow/extension layer are all in place.
-- `supercode init`, `doctor`, `run`, pack management, plugin loading, hooks, plugin tools, plugin run steps, and plugin commands are operational.
-- The scaffold now includes an editor-neutral project template with local workflow guidance and example extension files.
-- Phase 7 is now primarily about packaging, install-path polish, and smoke-test quality rather than new runtime architecture.
+Current status entering Phase 8:
+- The execution kernel, model control plane, MCP layer, memory layer, workflow/extension layer, and install-path smoke coverage are in place.
+- `smoke:phase7` now verifies the three main install flows: `npx supercode init`, `npm install @supercode/core`, and source checkout usage.
+- The current gap is release discipline: hardening gates, docs verification, security review artifacts, and launch-facing examples.
 
 Primary deliverables:
-- npm publish flow
-- install-path cleanup for `supercode` and `npx supercode init`
-- standalone repo quick-start polish
-- Windows and Unix install guidance or scripts
-- package smoke tests across install modes
+- coverage gates
+- performance profiling
+- security review
+- docs verification
+- release checklist
+- example apps and tutorials
+
+Initial Phase 8 slice:
+- automated docs verification script
+- release checklist baseline
+- roadmap and status updates that mark Phase 8 as active
 
 Exit criteria:
-- fresh-machine smoke tests succeed for:
-- `npx supercode init`
-- `npm install @supercode/core`
-- clone-and-run standalone repo flow
+- release candidate installable by outside users
+- docs and examples match shipped behavior
 
 Notes:
-- `NEXT-GOAL-M3.md` is retained as an implementation record for the completed resilient execution-kernel milestone.
-- Phase 6 workflow and extension work is considered complete enough to support packaging and adoption work.
+- `NEXT-GOAL-M3.md` remains the retained implementation record for the completed resilient execution-kernel milestone.
+- Phase 8 should focus on hardening the shipped surface before any major scope expansion.

@@ -20,13 +20,19 @@ Supercode is an adaptive developer orchestration framework. The current repo inc
 
 ## Install and Run
 
-Quick start with `npx`:
+Zero-install bootstrap:
 
 ```bash
 npx supercode init
 ```
 
-Local workspace usage:
+Package consumer path:
+
+```bash
+npm install @supercode/core
+```
+
+Source checkout:
 
 ```bash
 npm install
@@ -38,6 +44,19 @@ Fresh project bootstrap:
 
 ```bash
 npx create-supercode my-app
+```
+
+Install-path verification:
+
+```bash
+npm run smoke:phase7
+```
+
+Phase 8 hardening checks:
+
+```bash
+npm run coverage:gate
+npm run verify:docs
 ```
 
 ## CLI Commands
@@ -238,4 +257,4 @@ The workflow and extension layer is now functionally complete:
 
 ## Next Goal
 
-**Phase 7: Distribution and Install Experience**. Turn the completed kernel and extension layer into a smoother install, packaging, and adoption path.
+**Phase 8: Hardening and Launch**. Turn the architecture-complete and install-validated codebase into a release candidate with explicit verification, review, and release gates. See [RELEASE-CHECKLIST.md](/D:/SuperCode/Supercode/RELEASE-CHECKLIST.md).

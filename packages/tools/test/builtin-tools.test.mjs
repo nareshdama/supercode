@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { ExecutableToolRegistry, registerFirstPartyTools } from "../dist/index.js";
-import { mkdtempSync, writeFileSync, readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, readFileSync, mkdirSync } from "node:fs";
 import path from "node:path";
 import { tmpdir } from "node:os";
 
@@ -74,4 +74,50 @@ test("shell.exec returns stdout and respects working directory", async () => {
   }
 
   assert.ok(stdout.length > 0);
+});
+
+test("fs.write rejects paths outside the working directory even with shared prefixes", async () => {
+  const registry = new ExecutableToolRegistry();
+  registerFirstPartyTools(tool => registry.registerTool(tool));
+  const parent = mkdtempSync(path.join(tmpdir(), "supercode-tools-parent-"));
+  const cwd = path.join(parent, "workspace");
+  const outsideSibling = path.join(parent, "workspace-escape");
+  mkdirSync(cwd, { recursive: true });
+  mkdirSync(outsideSibling, { recursive: true });
+
+  const result = await registry.invoke(
+    "fs.write",
+    {
+      path: path.join(outsideSibling, "escape.txt"),
+      content: "nope"
+    },
+    { workingDirectory: cwd }
+  );
+
+  assert.equal(result.ok, false);
+  assert.match(String(result.error ?? ""), /outside the allowed workspace/i);
+});
+
+test("shell.exec rejects cwd overrides outside the working directory", async () => {
+  const registry = new ExecutableToolRegistry();
+  registerFirstPartyTools(tool => registry.registerTool(tool));
+  const parent = mkdtempSync(path.join(tmpdir(), "supercode-tools-parent-"));
+  const cwd = path.join(parent, "workspace");
+  const outsideSibling = path.join(parent, "workspace-escape");
+  mkdirSync(cwd, { recursive: true });
+  mkdirSync(outsideSibling, { recursive: true });
+
+  const result = await registry.invoke(
+    "shell.exec",
+    {
+      command: process.execPath,
+      args: ["-v"],
+      cwd: outsideSibling,
+      timeoutMs: 5000
+    },
+    { workingDirectory: cwd }
+  );
+
+  assert.equal(result.ok, false);
+  assert.match(String(result.error ?? ""), /outside the allowed workspace/i);
 });

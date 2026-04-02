@@ -56,8 +56,16 @@ Phase 8 hardening checks:
 
 ```bash
 npm run coverage:gate
+npm run profile:baseline
 npm run verify:docs
 ```
+
+Phase 8 review artifacts:
+
+- [RELEASE-CHECKLIST.md](/D:/SuperCode/Supercode/RELEASE-CHECKLIST.md)
+- [SECURITY-REVIEW.md](/D:/SuperCode/Supercode/SECURITY-REVIEW.md)
+- [PERFORMANCE-BASELINE.md](/D:/SuperCode/Supercode/PERFORMANCE-BASELINE.md)
+- [examples/README.md](/D:/SuperCode/Supercode/examples/README.md)
 
 ## CLI Commands
 

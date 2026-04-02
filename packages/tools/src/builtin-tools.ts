@@ -33,12 +33,15 @@ type ProjectScriptInput = {
 };
 
 function resolveCwd(context: ToolExecutionContext, override?: string): string {
-  return override ? path.resolve(override) : context.workingDirectory ?? process.cwd();
+  const baseDir = path.resolve(context.workingDirectory ?? process.cwd());
+  return override ? ensureInside(baseDir, override) : baseDir;
 }
 
 function ensureInside(baseDir: string, targetPath: string): string {
-  const resolved = path.resolve(baseDir, targetPath);
-  if (!resolved.startsWith(path.resolve(baseDir))) {
+  const resolvedBaseDir = path.resolve(baseDir);
+  const resolved = path.resolve(resolvedBaseDir, targetPath);
+  const relative = path.relative(resolvedBaseDir, resolved);
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
     throw new Error(`Path ${targetPath} is outside the allowed workspace.`);
   }
   return resolved;

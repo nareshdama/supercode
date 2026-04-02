@@ -1,10 +1,10 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const readmePath = path.join(rootDir, "README.md");
-const exampleReadmePath = path.join(rootDir, "examples", "minimal-runtime", "README.md");
+const examplesDir = path.join(rootDir, "examples");
 const cliEntrypoint = path.join(rootDir, "packages", "cli", "dist", "index.js");
 
 function fail(message) {
@@ -100,7 +100,7 @@ function verifyRequiredSnippets(readme) {
   }
 }
 
-function verifyExampleCommands(exampleReadme, helpCommands) {
+function verifyExampleCommands(exampleReadme, helpCommands, label) {
   const helpPrefixes = helpCommands
     .filter(command => !command.includes("<plugin-command>"))
     .map(normalizeCommandPrefix);
@@ -110,20 +110,35 @@ function verifyExampleCommands(exampleReadme, helpCommands) {
 
   const invalid = commands.filter(command => !helpPrefixes.some(prefix => command === prefix || command.startsWith(`${prefix} `)));
   if (invalid.length > 0) {
-    fail(`Example docs contain CLI commands not covered by help output: ${invalid.join(", ")}`);
+    fail(`${label} contains CLI commands not covered by help output: ${invalid.join(", ")}`);
   }
+}
+
+function collectExampleReadmes() {
+  if (!existsSync(examplesDir)) {
+    return [];
+  }
+
+  const directReadme = path.join(examplesDir, "README.md");
+  const nestedReadmes = readdirSync(examplesDir, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => path.join(examplesDir, entry.name, "README.md"))
+    .filter(filePath => existsSync(filePath));
+
+  return [directReadme, ...nestedReadmes].filter(filePath => existsSync(filePath));
 }
 
 async function main() {
   const readme = readText(readmePath);
-  const exampleReadme = readText(exampleReadmePath);
   const helpLines = await getCliHelpLines();
   const helpCommands = parseHelpCommands(helpLines);
   const readmeCommands = parseReadmeCommands(readme);
 
   verifyReadmeCommands(readmeCommands, helpCommands);
   verifyRequiredSnippets(readme);
-  verifyExampleCommands(exampleReadme, helpCommands);
+  for (const exampleReadmePath of collectExampleReadmes()) {
+    verifyExampleCommands(readText(exampleReadmePath), helpCommands, path.relative(rootDir, exampleReadmePath));
+  }
 
   console.log("[verify-docs] Documentation checks passed");
 }

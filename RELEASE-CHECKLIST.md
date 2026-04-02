@@ -8,6 +8,7 @@ This checklist is the Phase 8 release gate for Supercode.
 - Run `npm run build`
 - Run `npm test`
 - Run `npm run coverage:gate`
+- Run `npm run profile:baseline`
 - Run `npm run smoke:phase7`
 - Run `npm run verify:docs`
 
@@ -22,11 +23,13 @@ This checklist is the Phase 8 release gate for Supercode.
 
 - Confirm [README.md](/D:/SuperCode/Supercode/README.md) matches the actual CLI help output
 - Confirm [examples/minimal-runtime/README.md](/D:/SuperCode/Supercode/examples/minimal-runtime/README.md) uses valid CLI commands
+- Confirm [PERFORMANCE-BASELINE.md](/D:/SuperCode/Supercode/PERFORMANCE-BASELINE.md) reflects the latest profiling run
 - Confirm install guidance covers zero-install bootstrap, package-consumer usage, and source-checkout usage
 - Confirm release notes mention user-visible command, install, or template changes
 
 ## Security And Runtime Review
 
+- Confirm [SECURITY-REVIEW.md](/D:/SuperCode/Supercode/SECURITY-REVIEW.md) is current for the release
 - Review permission defaults for shell, filesystem, tool, and MCP execution
 - Review plugin and hook execution paths for cycle detection, invalid tool references, and abort behavior
 - Review MCP trust posture, transport boundaries, and degraded/backoff handling

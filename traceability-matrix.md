@@ -362,7 +362,7 @@ Current coverage status: all requirements in this package have explicit design o
 | R23.1 | Skills and rules are first-class workflow assets | `workflows/WorkflowCatalog` | D11.3 | Contract |
 | R23.2 | Skills define intent, triggers, dependencies, instructions | `workflows/WorkflowCatalog` | D11.3 | Contract |
 | R23.3 | Rules define scope, precedence, severity, targets | `workflows/WorkflowCatalog` | D11.3 | Contract |
-| R23.4 | Curated core packs derive from `DATA` references and are adapted for Supercode | `workflows/WorkflowInstaller` | D11.3 | Static + integration |
+| R23.4 | Curated core packs derive from prior reference implementations and are adapted for Supercode | `workflows/WorkflowInstaller` | D11.3 | Static + integration |
 | R23.5 | Skill and rule packs are versioned and schema-validated | `workflows/WorkflowInstaller` | D11.3 | Contract |
 | R23.6 | Skills and rules can be enabled, disabled, and policy-managed by scope | `workflows/WorkflowCatalog` | D11.3, D12.3 | Integration |
 | R23.7 | Discovery and search across installed skills and rules works | `workflows/WorkflowCatalog` | D11.3 | Integration |

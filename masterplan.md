@@ -10,14 +10,14 @@ Supercode should become an installable agent-orchestration framework with three 
 
 This plan is based on four local inputs:
 
-- `DATA/src`: large TypeScript runtime reference for tools, tasks, context, state, and MCP
-- `DATA/SimpleMem-main`: long-term and cross-session memory reference
-- `DATA/everything-claude-code-main`: install, workflow, rules, skills, agents, and packaging reference
+- a large TypeScript runtime reference covering tools, tasks, context, state, and MCP
+- a memory-focused reference project covering long-term and cross-session memory
+- a workflow and packaging reference project covering install strategy, skills, rules, hooks, and operational patterns
 - `.codex/`: local planning workflow reference used for this repository, not a required part of the Supercode product architecture
 
 ## 2. What We Reuse From Each Reference
 
-### 2.1 `DATA/src`
+### 2.1 Runtime Reference
 
 Adopt as inspiration:
 
@@ -35,7 +35,7 @@ Do not copy directly:
 
 Supercode should extract the kernel shape, then rebuild it using the layered contracts already defined in [design.md](/D:/SuperCode/Supercode/design.md).
 
-### 2.2 `DATA/SimpleMem-main`
+### 2.2 Memory Reference
 
 Adopt as inspiration:
 
@@ -51,7 +51,7 @@ Supercode should treat memory as optional:
 
 Memory must not block the core kernel from being lightweight.
 
-### 2.3 `DATA/everything-claude-code-main`
+### 2.3 Workflow and Packaging Reference
 
 Adopt as inspiration:
 
@@ -88,7 +88,7 @@ Core promise:
 - orchestrate agents and subagents
 - manage permissions, sessions, progress, and results
 - integrate MCP and optional long-term memory
-- ship powerful curated skills and rules informed by the `DATA` references
+- ship powerful curated skills and rules informed by prior reference implementations
 - run headless or with frontends
 
 ## 4. Delivery Modes
@@ -221,13 +221,13 @@ Suggested branch gate:
 
 ## 6.1 Skills and Rules Strategy
 
-Supercode should ship powerful skills and rules, but they must be curated into Supercode-owned packs instead of copied raw from the `DATA` folder.
+Supercode should ship powerful skills and rules, but they must be curated into Supercode-owned packs instead of copied raw from prior reference material.
 
 Reference sources:
 
-- `DATA/everything-claude-code-main`: primary reference for high-value skills, rules, agent workflows, and packaging patterns
-- `DATA/SimpleMem-main`: reference for memory-specific workflows and retrieval guidance
-- `DATA/src`: reference for runtime constraints that workflow packs must respect
+- workflow and packaging reference material for high-value skills, rules, agent workflows, and packaging patterns
+- memory reference material for retrieval guidance and lifecycle design
+- runtime reference material for constraints that workflow packs must respect
 
 Pack tiers:
 
@@ -250,13 +250,13 @@ Curation rules:
 
 Goal:
 
-- turn the three `DATA` sources into explicit Supercode decisions
+- turn the three main reference inputs into explicit Supercode decisions
 
 Deliverables:
 
 - architecture docs already started in `requirements.md`, `design.md`, `traceability-matrix.md`, `mcp-lifecycle-security.md`
 - this master plan
-- codemap of reusable source references from `DATA/src`
+- codemap of reusable patterns from the runtime reference
 
 Exit criteria:
 
@@ -372,8 +372,8 @@ Deliverables:
 - hook system
 - workflow catalog
 - workflow pack installer
-- curated skill packs derived from the `DATA` references
-- curated rule packs derived from the `DATA` references
+- curated skill packs derived from prior reference implementations
+- curated rule packs derived from prior reference implementations
 - example rules, skills, and agent roles
 - pack validation and linting
 - editor-neutral project template with optional local agent/workflow configuration
@@ -493,7 +493,7 @@ High-value expansion paths after MVP:
 
 ### 11.1 Architectural Risk
 
-- rebuilding too much of `DATA/src` without preserving its battle-tested execution patterns
+- rebuilding too much of the runtime reference without preserving its battle-tested execution patterns
 
 Mitigation:
 
@@ -538,20 +538,20 @@ Mitigation:
 ## 12. First Concrete Next Steps
 
 1. Create the monorepo scaffold under `Supercode/` with `packages/core`, `packages/cli`, and `packages/create-supercode`.
-2. Build a codemap from `DATA/src` that maps its tool, task, permission, MCP, and state files into the new package boundaries.
+2. Build a codemap from the runtime reference that maps its tool, task, permission, MCP, and state patterns into the new package boundaries.
 3. Define the first stable CLI surface: `init`, `doctor`, `run`, and `mcp`.
 4. Implement contract tests directly from [traceability-matrix.md](/D:/SuperCode/Supercode/traceability-matrix.md).
 5. Add a minimal example project that proves `npx supercode init` and `supercode run`.
 6. Treat memory as phase 5, not as a prerequisite for the kernel.
-7. Distill the first curated workflow pack from `DATA/everything-claude-code-main` into Supercode-native skills and rules.
+7. Distill the first curated workflow pack from the workflow reference into Supercode-native skills and rules.
 
 ## 13. Decision Summary
 
 Supercode should be built as a layered TypeScript monorepo with a small kernel-first MVP.
 
-- `DATA/src` informs runtime architecture
-- `SimpleMem-main` informs optional memory and cross-session continuity
-- `everything-claude-code-main` informs install, workflow, rules, and packaging strategy
+- the runtime reference informs runtime architecture
+- the memory reference informs optional memory and cross-session continuity
+- the workflow and packaging reference informs install, workflow, rules, and packaging strategy
 - `.codex` only informed the internal planning workflow and is not part of the target product architecture
 
 The right near-term target is not "clone all three references". The right target is "extract the kernel, keep memory optional, curate powerful skills and rules into Supercode-owned packs, and ship a CLI plus scaffold that users can adopt through `npx`, npm, or a standalone repo."

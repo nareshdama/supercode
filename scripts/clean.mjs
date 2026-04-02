@@ -9,7 +9,11 @@ for (const entry of readdirSync(packagesDir, { withFileTypes: true })) {
   if (!entry.isDirectory()) continue;
   const packageDir = path.join(packagesDir, entry.name);
   const distDir = path.join(packageDir, "dist");
+  const buildInfoPath = path.join(packageDir, ".tsbuildinfo");
   if (existsSync(distDir)) {
     rmSync(distDir, { recursive: true, force: true });
+  }
+  if (existsSync(buildInfoPath)) {
+    rmSync(buildInfoPath, { force: true });
   }
 }

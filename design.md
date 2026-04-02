@@ -989,7 +989,7 @@ interface WorkflowProvenance {
 }
 ```
 
-Curated packs should be informed by the `DATA` references, especially the workflow-rich material under `DATA/everything-claude-code-main`, but they must be normalized into Supercode-owned, versioned definitions rather than copied as opaque host-specific assets.
+Curated packs should be informed by prior reference implementations, especially workflow-rich reference material, but they must be normalized into Supercode-owned, versioned definitions rather than copied as opaque host-specific assets.
 
 ## D12. Telemetry, Recovery, Configuration, and Performance
 

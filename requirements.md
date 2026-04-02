@@ -422,14 +422,14 @@ Acceptance-criteria identifiers are defined as `R<requirement-number>.<criterion
 
 ### Requirement 23: Skills and Rules System
 
-**User Story:** As a developer, I want powerful skills and rules, so that Supercode can ship opinionated, high-value workflows informed by the `DATA` references without hard-coding them into the runtime kernel.
+**User Story:** As a developer, I want powerful skills and rules, so that Supercode can ship opinionated, high-value workflows informed by prior reference implementations without hard-coding them into the runtime kernel.
 
 #### Acceptance Criteria
 
 1. THE Orchestrator SHALL support installable skills and rules as first-class workflow assets.
 2. THE Skill SHALL define intent, trigger metadata, dependencies, and reusable workflow instructions.
 3. THE Rule SHALL define scope, precedence, severity, and applicable targets.
-4. THE Framework SHALL support curated core packs derived from the `DATA` references and evolved for Supercode.
+4. THE Framework SHALL support curated core packs derived from prior reference implementations and evolved for Supercode.
 5. THE Framework SHALL support versioned skill and rule packs with schema validation.
 6. THE Framework SHALL support enable, disable, and policy management for skills and rules at user, project, and package scope.
 7. THE Framework SHALL support discovery and search across installed skills and rules.

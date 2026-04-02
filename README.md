@@ -1,6 +1,13 @@
 # Supercode
 
-Supercode is an adaptive developer orchestration framework. The current repo includes the bootstrap layer, resilient local execution kernel, model control plane, MCP production layer, and an optional memory layer.
+Supercode is an adaptive developer orchestration framework. The current repository has Phases 1 through 7 implemented and is now in Phase 8 hardening: release checks, security review, performance baselining, docs verification, and example tutorials are in-repo.
+
+## Development Status
+
+- Current phase: Phase 8: Hardening and Launch
+- Delivery status: pre-release development, release gating in progress
+- Completed roadmap slices: bootstrap, execution kernel, model control plane, MCP production layer, memory layer, workflow and extension layer, and install-path validation
+- Current priority: keep docs, examples, install flows, and release artifacts aligned with shipped behavior
 
 ## Packages
 
@@ -62,10 +69,10 @@ npm run verify:docs
 
 Phase 8 review artifacts:
 
-- [RELEASE-CHECKLIST.md](/D:/SuperCode/Supercode/RELEASE-CHECKLIST.md)
-- [SECURITY-REVIEW.md](/D:/SuperCode/Supercode/SECURITY-REVIEW.md)
-- [PERFORMANCE-BASELINE.md](/D:/SuperCode/Supercode/PERFORMANCE-BASELINE.md)
-- [examples/README.md](/D:/SuperCode/Supercode/examples/README.md)
+- [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md)
+- [SECURITY-REVIEW.md](SECURITY-REVIEW.md)
+- [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md)
+- [examples/README.md](examples/README.md)
 
 ## CLI Commands
 
@@ -263,6 +270,6 @@ The workflow and extension layer is now functionally complete:
 - task matching now reports whether a match came from a pack or a plugin
 - `supercode extension list` and `supercode plugin list` show the generated baseline and discovered plugins
 
-## Next Goal
+## Current Development Focus
 
-**Phase 8: Hardening and Launch**. Turn the architecture-complete and install-validated codebase into a release candidate with explicit verification, review, and release gates. See [RELEASE-CHECKLIST.md](/D:/SuperCode/Supercode/RELEASE-CHECKLIST.md).
+Phase 8 hardening is underway. The architecture-complete and install-validated codebase now has release assets in place, and the remaining work is to close the release gate with current docs, current examples, repeated install validation, and final hardening passes. See [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).

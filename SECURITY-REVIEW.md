@@ -10,12 +10,12 @@ Scope:
 - persisted results and artifact handling
 
 Reviewed components:
-- [packages/permissions/src/permission-system.ts](/D:/SuperCode/Supercode/packages/permissions/src/permission-system.ts)
-- [packages/tools/src/builtin-tools.ts](/D:/SuperCode/Supercode/packages/tools/src/builtin-tools.ts)
-- [packages/cli/src/runtime.ts](/D:/SuperCode/Supercode/packages/cli/src/runtime.ts)
-- [packages/workflows/src/index.ts](/D:/SuperCode/Supercode/packages/workflows/src/index.ts)
-- [packages/state/src/file-store.ts](/D:/SuperCode/Supercode/packages/state/src/file-store.ts)
-- [mcp-lifecycle-security.md](/D:/SuperCode/Supercode/mcp-lifecycle-security.md)
+- [packages/permissions/src/permission-system.ts](packages/permissions/src/permission-system.ts)
+- [packages/tools/src/builtin-tools.ts](packages/tools/src/builtin-tools.ts)
+- [packages/cli/src/runtime.ts](packages/cli/src/runtime.ts)
+- [packages/workflows/src/index.ts](packages/workflows/src/index.ts)
+- [packages/state/src/file-store.ts](packages/state/src/file-store.ts)
+- [mcp-lifecycle-security.md](mcp-lifecycle-security.md)
 
 ## Current Posture
 
@@ -29,19 +29,19 @@ Reviewed components:
 
 1. Workspace path-prefix bypass in filesystem writes and reads.
 Before this review, workspace checks used a simple string prefix comparison. A sibling path such as `workspace-escape` could match the base prefix `workspace`.
-Status: fixed in [builtin-tools.ts](/D:/SuperCode/Supercode/packages/tools/src/builtin-tools.ts).
+Status: fixed in [builtin-tools.ts](packages/tools/src/builtin-tools.ts).
 
 2. Unrestricted `cwd` overrides for shell and project commands.
 Before this review, `shell.exec`, `git.status`, `project.build`, and `project.test` accepted `cwd` overrides resolved with `path.resolve()` but without workspace-boundary enforcement.
-Status: fixed in [builtin-tools.ts](/D:/SuperCode/Supercode/packages/tools/src/builtin-tools.ts).
+Status: fixed in [builtin-tools.ts](packages/tools/src/builtin-tools.ts).
 
 3. Regression coverage for the above boundary issues.
-Status: added in [builtin-tools.test.mjs](/D:/SuperCode/Supercode/packages/tools/test/builtin-tools.test.mjs).
+Status: added in [builtin-tools.test.mjs](packages/tools/test/builtin-tools.test.mjs).
 
 ## Findings
 
-- No current blocker was found in plugin cycle detection or invalid tool-reference validation. The workflow validator explicitly rejects duplicate plugin identifiers, duplicate command names, invalid hook failure policies, unknown tool references, and plugin-local tool cycles in [index.ts](/D:/SuperCode/Supercode/packages/workflows/src/index.ts).
-- MCP controls are documented strongly in [mcp-lifecycle-security.md](/D:/SuperCode/Supercode/mcp-lifecycle-security.md) and partially enforced in runtime code, but this remains a high-risk surface because it combines transport, trust, and external tool execution.
+- No current blocker was found in plugin cycle detection or invalid tool-reference validation. The workflow validator explicitly rejects duplicate plugin identifiers, duplicate command names, invalid hook failure policies, unknown tool references, and plugin-local tool cycles in [index.ts](packages/workflows/src/index.ts).
+- MCP controls are documented strongly in [mcp-lifecycle-security.md](mcp-lifecycle-security.md) and partially enforced in runtime code, but this remains a high-risk surface because it combines transport, trust, and external tool execution.
 - Permission behavior is conservative for shell, network, and MCP categories, but filesystem actions default to allow. That is acceptable for the current local-tooling model, but it is a release sensitivity if Supercode expands beyond explicitly user-scoped workspaces.
 
 ## Residual Risks

@@ -33,7 +33,13 @@ Do not copy directly:
 - monolithic `ToolUseContext`
 - product-specific feature flags and UI concerns
 
-Supercode should extract the kernel shape, then rebuild it using the layered contracts already defined in [design.md](/D:/SuperCode/Supercode/design.md).
+Supercode should extract the kernel shape, then rebuild it using the layered contracts already defined in [design.md](design.md).
+
+Current development status as of `2026-04-02`:
+
+- Phases 1 through 7 are complete.
+- Phase 8 hardening is underway, with release checklist, security review, performance baseline, docs verification, and example tutorials already landed in-repo.
+- Current work is focused on release gating and verification rather than major architecture expansion.
 
 ### 2.2 Memory Reference
 
@@ -540,7 +546,7 @@ Mitigation:
 1. Create the monorepo scaffold under `Supercode/` with `packages/core`, `packages/cli`, and `packages/create-supercode`.
 2. Build a codemap from the runtime reference that maps its tool, task, permission, MCP, and state patterns into the new package boundaries.
 3. Define the first stable CLI surface: `init`, `doctor`, `run`, and `mcp`.
-4. Implement contract tests directly from [traceability-matrix.md](/D:/SuperCode/Supercode/traceability-matrix.md).
+4. Implement contract tests directly from [traceability-matrix.md](traceability-matrix.md).
 5. Add a minimal example project that proves `npx supercode init` and `supercode run`.
 6. Treat memory as phase 5, not as a prerequisite for the kernel.
 7. Distill the first curated workflow pack from the workflow reference into Supercode-native skills and rules.

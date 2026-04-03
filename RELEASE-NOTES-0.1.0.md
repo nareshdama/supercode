@@ -1,10 +1,10 @@
-# Supercode 0.1.0-rc.1
+# Supercode 0.1.0
 
-Release candidate date: `2026-04-02`
+Release date: `2026-04-02`
 
 ## Summary
 
-`0.1.0-rc.1` is the first release candidate for Supercode. It packages the completed Phase 1 through Phase 8 surface into a release-candidate-ready monorepo with a working CLI, package-consumer install path, source-checkout path, docs verification, performance baseline, security review, and packaged install smoke validation.
+`0.1.0` is the first stable public release of Supercode. It packages the completed Phase 1 through Phase 8 surface into a release-ready monorepo with a working CLI, package-consumer install path, source-checkout path, docs verification, performance baseline, security review, and packaged install smoke validation.
 
 ## Highlights
 
@@ -19,7 +19,7 @@ Release candidate date: `2026-04-02`
 
 ## Verification Baseline
 
-The release candidate was validated with:
+The release was validated with:
 
 - `npm run build`
 - `npm test`
@@ -30,6 +30,6 @@ The release candidate was validated with:
 
 ## Known Limitations
 
-- MCP remains the highest-risk subsystem and should continue to receive adversarial trust and transport testing after the release candidate cut.
+- MCP remains the highest-risk subsystem and should continue to receive adversarial trust and transport testing after the `0.1.0` release.
 - Plugin and permission interactions are validated structurally, but deeper denied-tool and hostile-plugin coverage is still future hardening work.
 - Artifact retention now has bounded limits, but operational disk-growth monitoring remains necessary in long-lived workspaces.

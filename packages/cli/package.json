@@ -1,6 +1,6 @@
 {
   "name": "supercode",
-  "version": "0.1.0-rc.1",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,16 +21,16 @@
     "dist"
   ],
   "dependencies": {
-    "@supercode/core": "0.1.0-rc.1",
-    "@supercode/detect": "0.1.0-rc.1",
-    "@supercode/memory": "0.1.0-rc.1",
-    "@supercode/mcp": "0.1.0-rc.1",
-    "@supercode/models": "0.1.0-rc.1",
-    "@supercode/permissions": "0.1.0-rc.1",
-    "@supercode/progress": "0.1.0-rc.1",
-    "@supercode/state": "0.1.0-rc.1",
-    "@supercode/tasks": "0.1.0-rc.1",
-    "@supercode/tools": "0.1.0-rc.1",
-    "@supercode/workflows": "0.1.0-rc.1"
+    "@supercode/core": "0.1.0",
+    "@supercode/detect": "0.1.0",
+    "@supercode/memory": "0.1.0",
+    "@supercode/mcp": "0.1.0",
+    "@supercode/models": "0.1.0",
+    "@supercode/permissions": "0.1.0",
+    "@supercode/progress": "0.1.0",
+    "@supercode/state": "0.1.0",
+    "@supercode/tasks": "0.1.0",
+    "@supercode/tools": "0.1.0",
+    "@supercode/workflows": "0.1.0"
   }
 }

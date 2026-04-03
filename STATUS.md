@@ -3,7 +3,7 @@
 ## Current State
 - Phases 1 through 8 are complete. The monorepo, CLI, execution kernel, model control plane, MCP runtime, memory layer, workflow and extension layer, install-path smoke coverage, and release hardening are all in place.
 - Phase 8 (Hardening and Launch) is complete as of 2026-04-02. The repository now includes the hardening baseline: release checklist, security review, performance baseline, documentation verification, example tutorials, install-validation scripts, and artifact-retention controls.
-- The project is release-candidate ready. Current work is centered on operational release management and keeping the gate green rather than new subsystem expansion.
+- The project is release-ready for `0.1.0`. Current work is centered on the stable release cut and post-release operational follow-through rather than new subsystem expansion.
 - The repository is now MIT-licensed through [LICENSE](LICENSE).
 
 ## Implemented Surface

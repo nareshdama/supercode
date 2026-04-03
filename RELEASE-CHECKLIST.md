@@ -1,8 +1,8 @@
 # Release Checklist
 
-This checklist is the canonical release-candidate gate for Supercode.
+This checklist is the canonical stable-release gate for Supercode.
 
-Phase 8 established this gate. Keep it green before each tagged release candidate or public release.
+Phase 8 established this gate. Keep it green before each tagged public release.
 
 ## Build And Test
 

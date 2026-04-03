@@ -1,6 +1,6 @@
 # Example Apps And Tutorials
 
-These examples are the shipped tutorial set and the current release-candidate documentation baseline.
+These examples are the shipped tutorial set and the current stable-release documentation baseline.
 
 Available examples:
 

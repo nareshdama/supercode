@@ -39,7 +39,7 @@ Current development status as of `2026-04-02`:
 
 - Phases 1 through 8 are complete.
 - Phase 8 hardening is complete, with release checklist, security review, performance baseline, docs verification, example tutorials, install validation, and artifact-retention controls landed in-repo.
-- Current work is focused on release-candidate operations rather than major architecture expansion.
+- Current work is focused on the first stable release cut rather than major architecture expansion.
 
 ### 2.2 Memory Reference
 

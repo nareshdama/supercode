@@ -5,7 +5,7 @@ Supercode is an adaptive developer orchestration framework. The current reposito
 ## Development Status
 
 - Current phase: Phase 8: Hardening and Launch, complete as of 2026-04-02
-- Delivery status: release-candidate ready
+- Delivery status: release-ready for `0.1.0`
 - Completed roadmap slices: bootstrap, execution kernel, model control plane, MCP production layer, memory layer, workflow and extension layer, and install-path validation
 - Current priority: keep the release gate green and prepare the first tagged release candidate
 

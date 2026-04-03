@@ -1,4 +1,4 @@
-import type { MCPCapabilityProfile } from "@supercode/core";
+import type { MCPCapabilityProfile } from "@nareshdama/core";
 
 export interface JsonRpcRequest {
   jsonrpc: "2.0";

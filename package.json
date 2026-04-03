@@ -12,6 +12,8 @@
     "build": "tsc -b",
     "clean": "node ./scripts/clean.mjs",
     "coverage:gate": "npm run build && node ./scripts/coverage-gate.mjs",
+    "publish:release": "node ./scripts/publish-release.mjs",
+    "publish:release:dry-run": "node ./scripts/publish-release.mjs --dry-run",
     "profile:baseline": "npm run build && node ./scripts/profile-baseline.mjs",
     "smoke:phase7": "npm run clean && npm run build && node ./scripts/phase7-smoke.mjs",
     "test": "npm run build && node ./scripts/run-tests.mjs",

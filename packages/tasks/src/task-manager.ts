@@ -9,7 +9,7 @@ import type {
   TaskManager,
   TaskQuery,
   TaskRecord
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 type TaskListener = (event: TaskEvent, task: TaskRecord) => void;
 

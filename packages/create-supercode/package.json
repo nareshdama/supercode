@@ -1,11 +1,11 @@
 {
-  "name": "create-supercode",
+  "name": "@nareshdama/create-supercode",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "create-supercode": "./dist/index.js"
+    "create-supercode": "dist/index.js"
   },
   "exports": {
     ".": {
@@ -17,9 +17,9 @@
     "dist"
   ],
   "dependencies": {
-    "@supercode/core": "0.1.0",
-    "@supercode/detect": "0.1.0",
-    "@supercode/workflows": "0.1.0",
-    "supercode": "0.1.0"
+    "@nareshdama/core": "0.1.0",
+    "@nareshdama/detect": "0.1.0",
+    "@nareshdama/workflows": "0.1.0",
+    "@nareshdama/supercode": "0.1.0"
   }
 }

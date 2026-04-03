@@ -1,8 +1,8 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import type { DetectionSnapshot, ExecutionProfile, SupercodeConfig } from "@supercode/core";
-import { FileRuntimeStateStore } from "@supercode/state";
-import { installRecommendedWorkflowPacks } from "@supercode/workflows";
+import type { DetectionSnapshot, ExecutionProfile, SupercodeConfig } from "@nareshdama/core";
+import { FileRuntimeStateStore } from "@nareshdama/state";
+import { installRecommendedWorkflowPacks } from "@nareshdama/workflows";
 
 export interface InitProjectOptions {
   executionProfile: ExecutionProfile;

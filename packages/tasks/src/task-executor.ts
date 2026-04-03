@@ -8,7 +8,7 @@ import type {
   TaskExecutor,
   TaskManager,
   ToolRegistry
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 function clone<T>(value: T): T {
   return structuredClone(value);

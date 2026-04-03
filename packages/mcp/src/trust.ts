@@ -4,7 +4,7 @@ import type {
   MCPIsolationMode,
   MCPCredentialMode,
   MCPCapabilityProfile
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 export function determineTrustClass(config: McpServerConfig): MCPTrustClass {
   // If explicitly trusted via config overrides

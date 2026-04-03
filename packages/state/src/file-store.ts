@@ -13,7 +13,7 @@ import type {
   TaskEvent,
   TaskProgressSnapshot,
   TaskRecord
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 type PersistedTaskRecord = {
   task: TaskRecord;

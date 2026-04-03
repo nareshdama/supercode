@@ -7,7 +7,7 @@ import type {
   ToolExecutionContext,
   ToolRegistry,
   ToolResult
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 export interface ToolAuthorizationContext {
   tool: ToolDefinition;

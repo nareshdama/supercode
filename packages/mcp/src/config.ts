@@ -8,7 +8,7 @@ import type {
   McpServerConfig,
   McpTransportKind,
   McpTrustMode
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 type McpConfigCandidate = {
   path: string;

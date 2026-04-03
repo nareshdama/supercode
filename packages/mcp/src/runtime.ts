@@ -10,7 +10,7 @@ import type {
   McpServerConfig,
   McpServerStatus,
   MCPConnectionState
-} from "@supercode/core";
+} from "@nareshdama/core";
 import { detectMcpSupport, loadMcpRuntimeConfig } from "./config.js";
 import { SessionManager } from "./session.js";
 

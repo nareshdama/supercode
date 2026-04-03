@@ -1,5 +1,5 @@
 {
-  "name": "@supercode/core",
+  "name": "@nareshdama/core",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",

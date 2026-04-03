@@ -16,16 +16,16 @@ import type {
   TaskRecord,
   ToolExecutionContext,
   ToolResult
-} from "@supercode/core";
-import type { WorkflowHookEvent, WorkflowHookExecution, WorkflowHookRunResult } from "@supercode/core";
-import { InMemoryMemoryProvider, SessionMemory, SimpleMemAdapter } from "@supercode/memory";
-import { createMcpRuntime, type LocalMcpRuntime } from "@supercode/mcp";
-import { DefaultPermissionSystem } from "@supercode/permissions";
-import { InMemoryProgressTracker } from "@supercode/progress";
-import { FileRuntimeStateStore } from "@supercode/state";
-import { InMemoryTaskManager, SimpleTaskExecutor } from "@supercode/tasks";
-import { ExecutableToolRegistry, registerFirstPartyTools } from "@supercode/tools";
-import { loadResolvedWorkflowHooks, loadResolvedWorkflowPluginTools, rankRulesForTask, rankSkillsForTask } from "@supercode/workflows";
+} from "@nareshdama/core";
+import type { WorkflowHookEvent, WorkflowHookExecution, WorkflowHookRunResult } from "@nareshdama/core";
+import { InMemoryMemoryProvider, SessionMemory, SimpleMemAdapter } from "@nareshdama/memory";
+import { createMcpRuntime, type LocalMcpRuntime } from "@nareshdama/mcp";
+import { DefaultPermissionSystem } from "@nareshdama/permissions";
+import { InMemoryProgressTracker } from "@nareshdama/progress";
+import { FileRuntimeStateStore } from "@nareshdama/state";
+import { InMemoryTaskManager, SimpleTaskExecutor } from "@nareshdama/tasks";
+import { ExecutableToolRegistry, registerFirstPartyTools } from "@nareshdama/tools";
+import { loadResolvedWorkflowHooks, loadResolvedWorkflowPluginTools, rankRulesForTask, rankSkillsForTask } from "@nareshdama/workflows";
 
 export interface PersistedRuntimeContext {
   cwd: string;

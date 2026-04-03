@@ -11,32 +11,32 @@ Supercode is an adaptive developer orchestration framework. The current reposito
 
 ## Packages
 
-- `supercode`: CLI entrypoint
-- `create-supercode`: fresh project bootstrap
-- `@supercode/core`: shared runtime contracts
-- `@supercode/tasks`: in-memory task lifecycle manager
-- `@supercode/progress`: task progress tracking and timelines
-- `@supercode/permissions`: runtime permission decisions and logging
-- `@supercode/state`: file-backed session, task, and progress persistence
-- `@supercode/tools`: executable tool registry with permission-aware invocation
-- `@supercode/detect`: host, model, project, and safety detection
-- `@supercode/memory`: optional session and cross-run memory providers with retrieval helpers
-- `@supercode/models`: model capability inference
-- `@supercode/workflows`: workflow pack catalog and matching
-- `@supercode/mcp`: MCP config parsing, runtime inventory, and transport adapters
+- `@nareshdama/supercode`: CLI entrypoint
+- `@nareshdama/create-supercode`: fresh project bootstrap
+- `@nareshdama/core`: shared runtime contracts
+- `@nareshdama/tasks`: in-memory task lifecycle manager
+- `@nareshdama/progress`: task progress tracking and timelines
+- `@nareshdama/permissions`: runtime permission decisions and logging
+- `@nareshdama/state`: file-backed session, task, and progress persistence
+- `@nareshdama/tools`: executable tool registry with permission-aware invocation
+- `@nareshdama/detect`: host, model, project, and safety detection
+- `@nareshdama/memory`: optional session and cross-run memory providers with retrieval helpers
+- `@nareshdama/models`: model capability inference
+- `@nareshdama/workflows`: workflow pack catalog and matching
+- `@nareshdama/mcp`: MCP config parsing, runtime inventory, and transport adapters
 
 ## Install and Run
 
 Zero-install bootstrap:
 
 ```bash
-npx supercode init
+npx @nareshdama/supercode init
 ```
 
 Package consumer path:
 
 ```bash
-npm install @supercode/core
+npm install @nareshdama/core
 ```
 
 Source checkout:
@@ -50,7 +50,7 @@ node packages/cli/dist/index.js doctor
 Fresh project bootstrap:
 
 ```bash
-npx create-supercode my-app
+npx @nareshdama/create-supercode my-app
 ```
 
 Install-path verification:
@@ -73,6 +73,13 @@ Phase 8 review artifacts:
 - [SECURITY-REVIEW.md](SECURITY-REVIEW.md)
 - [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md)
 - [examples/README.md](examples/README.md)
+
+Release publishing helpers:
+
+```bash
+npm run publish:release:dry-run
+NPM_PUBLISH_OTP=123456 npm run publish:release
+```
 
 ## CLI Commands
 
@@ -160,23 +167,23 @@ Phase 1 is complete when these behaviors are present:
 
 The first Phase 2 runtime slice is now implemented:
 
-- shared task, progress, permission, session, tool, and MCP invocation contracts in `@supercode/core`
-- `@supercode/tasks` with an in-memory task manager
-- `@supercode/progress` with an in-memory progress tracker
+- shared task, progress, permission, session, tool, and MCP invocation contracts in `@nareshdama/core`
+- `@nareshdama/tasks` with an in-memory task manager
+- `@nareshdama/progress` with an in-memory progress tracker
 
 ## Phase 2 Slice 2
 
 The next runtime slice is now implemented:
 
-- `@supercode/permissions` with a conservative runtime permission system and logged decisions
-- `@supercode/state` with file-backed session, task, progress, and permission persistence
+- `@nareshdama/permissions` with a conservative runtime permission system and logged decisions
+- `@nareshdama/state` with file-backed session, task, progress, and permission persistence
 - CLI task runtime commands for `task start`, `task list`, `task show`, `task cancel`, `session show`, and `permission show`
 
 ## Phase 2 Slice 3
 
 The execution path now runs through the runtime instead of direct CLI helpers:
 
-- `@supercode/tools` provides a permission-aware executable tool registry
+- `@nareshdama/tools` provides a permission-aware executable tool registry
 - `supercode run <task>` creates a persisted task, invokes built-in runtime tools, and stores a structured result record
 - task details now include output references for stored results in `.supercode/results/`
 - MCP inspection is available as a built-in runtime tool and is captured alongside workflow matching results
@@ -185,7 +192,7 @@ The execution path now runs through the runtime instead of direct CLI helpers:
 
 The MCP layer now has a real runtime boundary instead of config-only inspection:
 
-- `@supercode/mcp` now parses structured MCP server configs and exposes a runtime with server inventory and invocation APIs
+- `@nareshdama/mcp` now parses structured MCP server configs and exposes a runtime with server inventory and invocation APIs
 - builtin, `stdio`, and `http` MCP transport adapters are now supported through the same runtime contract
 - `supercode mcp list` shows configured MCP servers and effective runtime posture
 - `supercode mcp invoke <server-id> <tool-name> [json-args]` runs through task, permission, progress, and result persistence
@@ -195,7 +202,7 @@ The MCP layer now has a real runtime boundary instead of config-only inspection:
 The local execution kernel is partially live:
 
 - first-party tools: `shell.exec` (bounded cwd), `fs.read` and `fs.write` (scoped), `git.status`, `project.build`, `project.test`
-- `@supercode/tasks` executor runs ordered steps, reports progress, and returns structured outcomes
+- `@nareshdama/tasks` executor runs ordered steps, reports progress, and returns structured outcomes
 - `supercode run <task>` now pipelines through the executor and builtin tools
 - `result list` and `result show` surface stored outputs from completed tasks
 
@@ -236,7 +243,7 @@ The MCP runtime is now lifecycle-aware and production-oriented:
 ## Phase 5: Memory Layer
 
 The memory layer is now operational as an optional runtime feature:
-- `@supercode/memory` provides local memory storage, retrieval scoring, retention helpers, and a SimpleMem adapter seam
+- `@nareshdama/memory` provides local memory storage, retrieval scoring, retention helpers, and a SimpleMem adapter seam
 - `.supercode/config.json` now carries explicit memory and artifact-retention configuration and keeps memory disabled by default
 - `.supercode/memory/` persists memory records across runs
 - `supercode run <task>` retrieves matching session memory when enabled and stores new task/result memories automatically

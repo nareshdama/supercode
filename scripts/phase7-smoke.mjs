@@ -154,11 +154,11 @@ function verifyPackagedCli(tarballsByName) {
 }
 
 function verifyCoreInstall(tarballsByName) {
-  log("Verifying @supercode/core package install path");
+  log("Verifying @nareshdama/core package install path");
   const testDir = path.join(smokeRoot, "core-install");
-  const coreTarball = tarballsByName.get("@supercode/core");
+  const coreTarball = tarballsByName.get("@nareshdama/core");
   if (!coreTarball) {
-    throw new Error("Missing packed tarball for @supercode/core.");
+    throw new Error("Missing packed tarball for @nareshdama/core.");
   }
 
   writePackageJson(testDir, "phase7-core-install");
@@ -172,7 +172,7 @@ function verifyCoreInstall(tarballsByName) {
       "--input-type=module",
       "-e",
       [
-        "import { createExecutionProfile } from '@supercode/core';",
+        "import { createExecutionProfile } from '@nareshdama/core';",
         "const profile = createExecutionProfile({",
         "  invocation: { launcher: 'cli', packageManager: 'npm' },",
         "  host: { hostId: 'unknown', displayName: 'Smoke', source: 'unknown', confidence: 'high', supportsTools: false, supportsMcp: false, supportsStreaming: false, supportsMultiAgent: false, notes: [] },",

@@ -3,7 +3,7 @@ import type {
   ModelInvocationRequest,
   ModelInvocationResult,
   ModelFinishReason
-} from "@supercode/core";
+} from "@nareshdama/core";
 import { BaseModelProvider, type BaseProviderOptions } from "./provider.js";
 
 const ANTHROPIC_MODELS: ModelDescriptor[] = [

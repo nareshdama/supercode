@@ -52,8 +52,8 @@ Adopt as inspiration:
 
 Supercode should treat memory as optional:
 
-- `@supercode/memory` for local or embedded memory
-- `@supercode/memory-mcp` for external memory service integration
+- `@nareshdama/memory` for local or embedded memory
+- `@nareshdama/memory-mcp` for external memory service integration
 
 Memory must not block the core kernel from being lightweight.
 
@@ -103,12 +103,12 @@ Core promise:
 
 Primary packages:
 
-- `@supercode/core`: runtime contracts and orchestrator kernel
-- `@supercode/models`: provider abstraction, routing, prompt registry, budgets, evals
-- `@supercode/mcp`: MCP lifecycle manager, trust policy, health monitor
-- `@supercode/memory`: optional local memory facade
-- `@supercode/workflows`: curated skills, rules, prompts, and workflow packs
-- `@supercode/sdk`: embedding API for external apps and services
+- `@nareshdama/core`: runtime contracts and orchestrator kernel
+- `@nareshdama/models`: provider abstraction, routing, prompt registry, budgets, evals
+- `@nareshdama/mcp`: MCP lifecycle manager, trust policy, health monitor
+- `@nareshdama/memory`: optional local memory facade
+- `@nareshdama/workflows`: curated skills, rules, prompts, and workflow packs
+- `@nareshdama/sdk`: embedding API for external apps and services
 
 ### 4.2 CLI
 
@@ -355,7 +355,7 @@ Goal:
 
 Deliverables:
 
-- `@supercode/memory`
+- `@nareshdama/memory`
 - memory provider interface
 - SimpleMem-inspired adapter
 - session memory collection and retrieval pipeline
@@ -407,7 +407,7 @@ Exit criteria:
 
 - fresh machine smoke test succeeds for:
   - `npx supercode init`
-  - `npm install @supercode/core`
+  - `npm install @nareshdama/core`
   - clone-and-run standalone repo path
 
 ### Phase 8: Hardening and Launch
@@ -458,12 +458,12 @@ Recommended initial names:
 
 - `supercode`: CLI package
 - `create-supercode`: project scaffolder
-- `@supercode/core`
-- `@supercode/models`
-- `@supercode/mcp`
-- `@supercode/memory`
-- `@supercode/workflows`
-- `@supercode/sdk`
+- `@nareshdama/core`
+- `@nareshdama/models`
+- `@nareshdama/mcp`
+- `@nareshdama/memory`
+- `@nareshdama/workflows`
+- `@nareshdama/sdk`
 
 ### 9.2 Publish Strategy
 
@@ -477,7 +477,7 @@ Recommended initial names:
 User-facing install paths:
 
 - `npm install supercode`
-- `npm install @supercode/core`
+- `npm install @nareshdama/core`
 - `npm install -g supercode`
 - `git clone <repo>`
 

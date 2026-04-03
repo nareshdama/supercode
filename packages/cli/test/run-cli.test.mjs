@@ -1536,12 +1536,12 @@ test("SimpleTaskExecutor is available in runtime context", async () => {
 
     const state = (await import("../dist/runtime.js")).createPersistedRuntimeContext(
       cwd,
-      (await import("@supercode/core")).createExecutionProfile({
-        ... (await import("@supercode/detect")).detectRuntimeInputs(cwd, process.env),
-        workflowRecommendation: (await import("@supercode/workflows")).recommendWorkflowPacks(
-          (await import("@supercode/detect")).detectProjectProfile(cwd),
-          (await import("@supercode/detect")).detectHostCapabilities(process.env),
-          (await import("@supercode/detect")).detectModelCapabilities(process.env)
+      (await import("@nareshdama/core")).createExecutionProfile({
+        ... (await import("@nareshdama/detect")).detectRuntimeInputs(cwd, process.env),
+        workflowRecommendation: (await import("@nareshdama/workflows")).recommendWorkflowPacks(
+          (await import("@nareshdama/detect")).detectProjectProfile(cwd),
+          (await import("@nareshdama/detect")).detectHostCapabilities(process.env),
+          (await import("@nareshdama/detect")).detectModelCapabilities(process.env)
         )
       })
     );
@@ -1785,7 +1785,7 @@ test("runCli task retry re-executes a failed task using stored plan", async () =
     assert.ok(taskId);
 
     // Manually mark the task as failed so we can retry it.
-    const { FileRuntimeStateStore } = await import("@supercode/state");
+    const { FileRuntimeStateStore } = await import("@nareshdama/state");
     const store = new FileRuntimeStateStore(cwd);
     const persisted = store.loadTask(taskId);
     assert.ok(persisted);
@@ -1845,7 +1845,7 @@ test("runCli task resume continues from stored progress", async () => {
     assert.ok(taskId);
 
     // Manually set the task to failed for resume.
-    const { FileRuntimeStateStore } = await import("@supercode/state");
+    const { FileRuntimeStateStore } = await import("@nareshdama/state");
     const store = new FileRuntimeStateStore(cwd);
     const persisted = store.loadTask(taskId);
     assert.ok(persisted);
@@ -1903,7 +1903,7 @@ test("runCli task retry --force retries non-retryable errors", async () => {
     assert.ok(taskId);
 
     // Mark as failed with retryable: false.
-    const { FileRuntimeStateStore } = await import("@supercode/state");
+    const { FileRuntimeStateStore } = await import("@nareshdama/state");
     const store = new FileRuntimeStateStore(cwd);
     const persisted = store.loadTask(taskId);
     assert.ok(persisted);

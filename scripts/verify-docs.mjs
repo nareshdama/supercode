@@ -87,8 +87,8 @@ function verifyReadmeCommands(readmeCommands, helpCommands) {
 
 function verifyRequiredSnippets(readme) {
   const requiredSnippets = [
-    "npx supercode init",
-    "npm install @supercode/core",
+    "npx @nareshdama/supercode init",
+    "npm install @nareshdama/core",
     "npm run smoke:phase7",
     "npm run verify:docs",
     "Phase 8: Hardening and Launch"

@@ -7,7 +7,7 @@ import type {
   PermissionMode,
   PermissionRequest,
   PermissionSystem
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 export interface PermissionSystemOptions {
   mode: PermissionMode;

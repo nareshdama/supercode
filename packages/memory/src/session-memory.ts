@@ -4,7 +4,7 @@ import type {
   MemoryQuery,
   MemoryRecord,
   MemoryRetentionPolicy
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 export interface SessionMemoryOptions {
   provider: MemoryProvider;

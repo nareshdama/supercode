@@ -1,4 +1,4 @@
-import type { WorkflowPackManifest } from "@supercode/core";
+import type { WorkflowPackManifest } from "@nareshdama/core";
 
 export const PACK_MANIFESTS: WorkflowPackManifest[] = [
   {

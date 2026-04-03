@@ -1,4 +1,4 @@
-import type { MemoryRecord } from "@supercode/core";
+import type { MemoryRecord } from "@nareshdama/core";
 
 export function isMemoryExpired(record: MemoryRecord, referenceTime = Date.now()): boolean {
   if (record.retention.strategy !== "ttl" || record.retention.ttlDays === undefined) {

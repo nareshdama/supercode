@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import type { ToolDefinition, ToolExecutionContext } from "@supercode/core";
+import type { ToolDefinition, ToolExecutionContext } from "@nareshdama/core";
 
 type ShellExecInput = {
   command: string;

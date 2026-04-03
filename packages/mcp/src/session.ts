@@ -1,6 +1,6 @@
 import { ChildProcessWithoutNullStreams, spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import type { McpServerConfig, MCPServerSession, MCPConnectionState } from "@supercode/core";
+import type { McpServerConfig, MCPServerSession, MCPConnectionState } from "@nareshdama/core";
 import { MCPHealthMonitor } from "./health.js";
 import { determineTrustClass, filterCapabilitiesByTrust } from "./trust.js";
 import { negotiateCapabilities, JsonRpcRequest, JsonRpcResponse, JsonRpcNotification } from "./negotiation.js";

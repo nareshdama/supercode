@@ -16,12 +16,12 @@ import type {
   WorkflowHookRunResult,
   WorkflowPackSummary,
   WorkflowRecommendation
-} from "@supercode/core";
-import { createExecutionProfile } from "@supercode/core";
-import type { ModelDescriptor, ProviderHealth } from "@supercode/core";
-import { detectRuntimeInputs } from "@supercode/detect";
-import { detectMcpSupport } from "@supercode/mcp";
-import { ModelCatalog, BudgetPolicy } from "@supercode/models";
+} from "@nareshdama/core";
+import { createExecutionProfile } from "@nareshdama/core";
+import type { ModelDescriptor, ProviderHealth } from "@nareshdama/core";
+import { detectRuntimeInputs } from "@nareshdama/detect";
+import { detectMcpSupport } from "@nareshdama/mcp";
+import { ModelCatalog, BudgetPolicy } from "@nareshdama/models";
 import {
   getWorkflowPack,
   installWorkflowPack,
@@ -38,8 +38,8 @@ import {
   syncWorkflowPackState,
   validateWorkflowExtensions,
   uninstallWorkflowPack
-} from "@supercode/workflows";
-import { getFirstPartyTools } from "@supercode/tools";
+} from "@nareshdama/workflows";
+import { getFirstPartyTools } from "@nareshdama/tools";
 import {
   createPersistedRuntimeContext,
   evaluateRuntimePermission,

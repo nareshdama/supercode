@@ -1,4 +1,4 @@
-import type { MemoryAttachment, MemoryProvider, MemoryQuery } from "@supercode/core";
+import type { MemoryAttachment, MemoryProvider, MemoryQuery } from "@nareshdama/core";
 
 export function attachTopMemories(provider: MemoryProvider, query: MemoryQuery = {}): MemoryAttachment[] {
   return provider.attach(query);

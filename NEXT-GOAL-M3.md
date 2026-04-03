@@ -18,7 +18,7 @@ Scope (out):
 - model-routing layer changes
 
 Deliverables:
-- updated result record schema in `@supercode/state` with preview plus artifact references
+- updated result record schema in `@nareshdama/state` with preview plus artifact references
 - executor writes result records and links them to task history
 - `result list` and `result show` read from stored records with truncation and pagination safeguards
 - `task retry` and `task resume` commands that reuse stored plans and progress, respecting permissions

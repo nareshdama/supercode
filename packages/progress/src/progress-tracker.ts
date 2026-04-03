@@ -7,7 +7,7 @@ import type {
   TaskEvent,
   TaskProgressSnapshot,
   TaskStatus
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 function clone<T>(value: T): T {
   return structuredClone(value);

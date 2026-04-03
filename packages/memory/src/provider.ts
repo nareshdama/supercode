@@ -5,7 +5,7 @@ import type {
   MemoryProviderInfo,
   MemoryQuery,
   MemoryRecord
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 export interface InMemoryMemoryProviderOptions {
   providerId?: string;

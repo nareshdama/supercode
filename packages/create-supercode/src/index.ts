@@ -2,9 +2,9 @@
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { createExecutionProfile } from "@supercode/core";
-import { detectRuntimeInputs } from "@supercode/detect";
-import { recommendWorkflowPacks } from "@supercode/workflows";
+import { createExecutionProfile } from "@nareshdama/core";
+import { detectRuntimeInputs } from "@nareshdama/detect";
+import { recommendWorkflowPacks } from "@nareshdama/workflows";
 import { initializeProject } from "supercode/scaffold";
 
 export async function runCreateSupercode(argv: string[] = process.argv.slice(2)): Promise<number> {

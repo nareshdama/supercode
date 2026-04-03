@@ -25,7 +25,7 @@ import type {
   WorkflowPackManifest,
   WorkflowPackSummary,
   WorkflowRecommendation
-} from "@supercode/core";
+} from "@nareshdama/core";
 import { PACK_MANIFESTS } from "./manifests.js";
 
 type WorkflowCatalog = {

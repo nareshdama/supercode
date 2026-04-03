@@ -1,4 +1,4 @@
-import type { MCPHealthStatus, MCPConnectionState } from "@supercode/core";
+import type { MCPHealthStatus, MCPConnectionState } from "@nareshdama/core";
 
 export interface HealthMonitorOptions {
   degradedThreshold?: number;

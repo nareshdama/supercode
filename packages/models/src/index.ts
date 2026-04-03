@@ -1,4 +1,4 @@
-import type { ContextWindowTier, ModelCapabilities, ModelProvider, ReasoningTier } from "@supercode/core";
+import type { ContextWindowTier, ModelCapabilities, ModelProvider, ReasoningTier } from "@nareshdama/core";
 
 type Signature = {
   matcher: RegExp;

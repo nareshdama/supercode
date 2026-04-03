@@ -7,7 +7,7 @@ import type {
   ModelUsage,
   ProviderHealth,
   ProviderHealthStatus
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 function now(): string {
   return new Date().toISOString();

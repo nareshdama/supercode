@@ -4,7 +4,7 @@ import type {
   BudgetSnapshot,
   ModelDescriptor,
   UsageRecord
-} from "@supercode/core";
+} from "@nareshdama/core";
 
 function now(): string {
   return new Date().toISOString();

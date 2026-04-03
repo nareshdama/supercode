@@ -12,8 +12,8 @@ import type {
   ProjectProfile,
   ReasoningTier,
   SafetyProfile
-} from "@supercode/core";
-import { inferModelCapabilities } from "@supercode/models";
+} from "@nareshdama/core";
+import { inferModelCapabilities } from "@nareshdama/models";
 
 type EnvLike = NodeJS.ProcessEnv;
 

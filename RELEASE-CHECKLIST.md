@@ -17,7 +17,7 @@ Phase 8 established this gate. Keep it green before each tagged public release.
 ## Package And Install Validation
 
 - Verify `npx supercode init` works from a clean machine or clean temp directory
-- Verify `npm install @supercode/core` works as a consumer install path
+- Verify `npm install @nareshdama/core` works as a consumer install path
 - Verify source checkout usage works with `npm install`, `npm run build`, and `node packages/cli/dist/index.js doctor`
 - Verify published tarballs do not ship build metadata or unintended files
 
@@ -42,4 +42,5 @@ Phase 8 established this gate. Keep it green before each tagged public release.
 - Record the version being shipped
 - Record the date of the release candidate
 - Record any known limitations that remain acceptable for the release
+- Confirm npm publish auth is valid: either an interactive session that can provide OTP or a granular access token with bypass-2FA enabled
 - Do not publish until all blockers are resolved or explicitly accepted

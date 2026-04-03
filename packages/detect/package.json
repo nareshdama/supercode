@@ -1,5 +1,5 @@
 {
-  "name": "@supercode/detect",
+  "name": "@nareshdama/detect",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -14,7 +14,7 @@
     "dist"
   ],
   "dependencies": {
-    "@supercode/core": "0.1.0",
-    "@supercode/models": "0.1.0"
+    "@nareshdama/core": "0.1.0",
+    "@nareshdama/models": "0.1.0"
   }
 }

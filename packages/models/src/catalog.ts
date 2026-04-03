@@ -4,7 +4,7 @@ import type {
   ModelInvocationResult,
   ModelProviderAdapter,
   ProviderHealth
-} from "@supercode/core";
+} from "@nareshdama/core";
 import { OpenAIProvider } from "./openai-provider.js";
 import { AnthropicProvider } from "./anthropic-provider.js";
 

@@ -4,7 +4,7 @@ import type {
   MemoryProviderInfo,
   MemoryQuery,
   MemoryRecord
-} from "@supercode/core";
+} from "@nareshdama/core";
 import { InMemoryMemoryProvider } from "./provider.js";
 
 export interface SimpleMemAdapterOptions {

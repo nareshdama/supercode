@@ -1,4 +1,4 @@
-import type { PromptTemplate, RenderedPrompt } from "@supercode/core";
+import type { PromptTemplate, RenderedPrompt } from "@nareshdama/core";
 
 function now(): string {
   return new Date().toISOString();

@@ -4,7 +4,7 @@ import type {
   ModelInvocationResult,
   ModelSelectionDecision,
   ModelSelectionRequest
-} from "@supercode/core";
+} from "@nareshdama/core";
 import type { ModelCatalog } from "./catalog.js";
 
 const TRUST_SCORES: Record<string, number> = {

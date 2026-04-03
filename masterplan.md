@@ -13,7 +13,7 @@ This plan is based on four local inputs:
 - a large TypeScript runtime reference covering tools, tasks, context, state, and MCP
 - a memory-focused reference project covering long-term and cross-session memory
 - a workflow and packaging reference project covering install strategy, skills, rules, hooks, and operational patterns
-- `.codex/`: local planning workflow reference used for this repository, not a required part of the Supercode product architecture
+- a historical internal Codex workflow reference used during planning, not a required part of the Supercode product architecture
 
 ## 2. What We Reuse From Each Reference
 
@@ -37,9 +37,9 @@ Supercode should extract the kernel shape, then rebuild it using the layered con
 
 Current development status as of `2026-04-02`:
 
-- Phases 1 through 7 are complete.
-- Phase 8 hardening is underway, with release checklist, security review, performance baseline, docs verification, and example tutorials already landed in-repo.
-- Current work is focused on release gating and verification rather than major architecture expansion.
+- Phases 1 through 8 are complete.
+- Phase 8 hardening is complete, with release checklist, security review, performance baseline, docs verification, example tutorials, install validation, and artifact-retention controls landed in-repo.
+- Current work is focused on release-candidate operations rather than major architecture expansion.
 
 ### 2.2 Memory Reference
 
@@ -68,16 +68,16 @@ Adopt as inspiration:
 
 Supercode should not be only a workflow pack. It should use this repo's operational model to wrap a real runtime framework.
 
-### 2.4 `.codex/`
+### 2.4 Historical Codex Workflow Reference
 
-The local `.codex` directory defines how this repo currently operates while planning Supercode:
+A historical internal Codex workflow reference informed how this repo was operated while planning Supercode:
 
 - `explorer`: read-only evidence gathering before structural changes
 - `reviewer`: correctness, security, regression, and missing-test review
 - `docs-researcher`: verify API and behavior claims before they land
 - instruction-first security and sandbox discipline
 
-This should guide development process only. It should not be treated as part of the shipped Supercode architecture.
+This informed development process only. It should not be treated as part of the shipped Supercode architecture.
 
 ## 3. Product Definition
 

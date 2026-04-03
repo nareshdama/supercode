@@ -4,9 +4,9 @@
 
 Supercode memory is intentionally lightweight today:
 
-- session-scoped capture in [session-memory.ts](D:\SuperCode\Supercode\packages\memory\src\session-memory.ts)
-- pluggable provider surface in [simplemem-adapter.ts](D:\SuperCode\Supercode\packages\memory\src\simplemem-adapter.ts)
-- runtime wiring in [runtime.ts](D:\SuperCode\Supercode\packages\cli\src\runtime.ts)
+- session-scoped capture in [session-memory.ts](../../packages/memory/src/session-memory.ts)
+- pluggable provider surface in [simplemem-adapter.ts](../../packages/memory/src/simplemem-adapter.ts)
+- runtime wiring in [runtime.ts](../../packages/cli/src/runtime.ts)
 
 This is a good baseline, but it is only the first layer.
 
@@ -16,7 +16,7 @@ This is a good baseline, but it is only the first layer.
 
 Memory should remain a provider attached by configuration, not a mandatory runtime dependency.
 
-That design is already correct in [runtime.ts](D:\SuperCode\Supercode\packages\cli\src\runtime.ts).
+That design is already correct in [runtime.ts](../../packages/cli/src/runtime.ts).
 
 ### 2. Separate session timeline from long-term retrieval
 

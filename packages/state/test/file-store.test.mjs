@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { FileRuntimeStateStore } from "../dist/index.js";
@@ -213,6 +213,64 @@ test("FileRuntimeStateStore does not truncate small result data", () => {
   assert.ok(result.preview);
   assert.equal(result.preview, JSON.stringify({ ok: true }));
   assert.equal(result.artifactRef, undefined);
+});
+
+test("FileRuntimeStateStore prunes oldest artifacts when entry limit is exceeded", () => {
+  const cwd = mkdtempSync(path.join(tmpdir(), "supercode-state-"));
+  const store = new FileRuntimeStateStore(cwd, {
+    artifactPolicy: {
+      maxEntries: 2,
+      maxTotalBytes: 10_000,
+      maxArtifactBytes: 10_000
+    }
+  });
+
+  const first = store.saveResult({
+    resultRef: "result-1",
+    kind: "task-output",
+    summary: "First large output",
+    data: { output: "a".repeat(3000) }
+  });
+  const second = store.saveResult({
+    resultRef: "result-2",
+    kind: "task-output",
+    summary: "Second large output",
+    data: { output: "b".repeat(3000) }
+  });
+  const third = store.saveResult({
+    resultRef: "result-3",
+    kind: "task-output",
+    summary: "Third large output",
+    data: { output: "c".repeat(3000) }
+  });
+
+  assert.equal(existsSync(path.join(cwd, ".supercode", "artifacts", "result-1.json")), false);
+  assert.equal(existsSync(path.join(cwd, ".supercode", "artifacts", "result-2.json")), true);
+  assert.equal(existsSync(path.join(cwd, ".supercode", "artifacts", "result-3.json")), true);
+  assert.equal(store.loadResult(first.resultRef)?.artifactRef, undefined);
+  assert.equal(store.loadResult(second.resultRef)?.artifactRef, second.artifactRef);
+  assert.equal(store.loadResult(third.resultRef)?.artifactRef, third.artifactRef);
+});
+
+test("FileRuntimeStateStore omits oversized artifacts when they exceed the configured size cap", () => {
+  const cwd = mkdtempSync(path.join(tmpdir(), "supercode-state-"));
+  const store = new FileRuntimeStateStore(cwd, {
+    artifactPolicy: {
+      maxEntries: 10,
+      maxTotalBytes: 10_000,
+      maxArtifactBytes: 512
+    }
+  });
+
+  const result = store.saveResult({
+    kind: "task-output",
+    summary: "Oversized output",
+    data: { output: "x".repeat(3000) }
+  });
+
+  assert.equal(result.artifactRef, undefined);
+  assert.match(result.preview ?? "", /artifact omitted/i);
+  assert.deepEqual(readdirSync(path.join(cwd, ".supercode", "artifacts")), []);
 });
 
 test("FileRuntimeStateStore saves and queries memory records", () => {

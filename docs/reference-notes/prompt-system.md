@@ -2,9 +2,9 @@
 
 ## Current State
 
-Supercode has a useful prompt registry in [prompt-registry.ts](D:\SuperCode\Supercode\packages\models\src\prompt-registry.ts), but it is still only a template catalog.
+Supercode has a useful prompt registry in [prompt-registry.ts](../../packages/models/src/prompt-registry.ts), but it is still only a template catalog.
 
-That is enough for Phase 8, but not enough for a more advanced agent runtime.
+That is enough for the current release baseline, but not enough for a more advanced agent runtime.
 
 ## Useful Patterns To Keep
 

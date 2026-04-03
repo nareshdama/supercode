@@ -1,6 +1,6 @@
 # Example Apps And Tutorials
 
-These examples are the Phase 8 baseline for shipped tutorials and the current release-readiness docs set.
+These examples are the shipped tutorial set and the current release-candidate documentation baseline.
 
 Available examples:
 

@@ -11,7 +11,7 @@ supercode doctor
 
 ## 2. Enable Memory
 
-Edit `.supercode/config.json` and set:
+Edit `.supercode/config.json` and update the `memory` block to:
 
 ```json
 {

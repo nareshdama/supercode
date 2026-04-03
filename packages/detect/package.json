@@ -1,6 +1,6 @@
 {
   "name": "@supercode/detect",
-  "version": "0.1.0",
+  "version": "0.1.0-rc.1",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,7 +14,7 @@
     "dist"
   ],
   "dependencies": {
-    "@supercode/core": "0.1.0",
-    "@supercode/models": "0.1.0"
+    "@supercode/core": "0.1.0-rc.1",
+    "@supercode/models": "0.1.0-rc.1"
   }
 }

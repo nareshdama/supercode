@@ -49,6 +49,9 @@ test("runCli init writes Supercode state for a new project", async () => {
     assert.equal(typeof config.createdAt, "string");
     assert.equal(config.memory.enabled, false);
     assert.equal(config.memory.provider, "local");
+    assert.equal(config.artifacts.maxEntries, 50);
+    assert.equal(config.artifacts.maxTotalBytes, 5000000);
+    assert.equal(config.artifacts.maxArtifactBytes, 1000000);
     assert.equal(snapshot.version, 1);
     assert.deepEqual(config.selectedPackIds, ["core", "typescript"]);
     assert.deepEqual(snapshot.executionProfile.recommendedPackIds, ["core", "typescript"]);

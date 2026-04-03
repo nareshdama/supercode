@@ -338,12 +338,19 @@ export interface SupercodeMemoryConfig {
   retention: MemoryRetentionPolicy;
 }
 
+export interface SupercodeArtifactConfig {
+  maxEntries: number;
+  maxTotalBytes: number;
+  maxArtifactBytes: number;
+}
+
 export interface SupercodeConfig {
   version: 1;
   selectedPackIds: string[];
   verificationLevel: VerificationLevel;
   promptBudgetProfile: PromptBudgetProfile;
   memory: SupercodeMemoryConfig;
+  artifacts: SupercodeArtifactConfig;
   createdAt: string;
   updatedAt: string;
 }

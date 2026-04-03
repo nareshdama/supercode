@@ -15,7 +15,7 @@ The scaffold also writes:
 - `.supercode/extensions/local/hooks.example.json`
 - `.supercode/extensions/plugins/plugin.example.json`
 
-Enable memory explicitly in `.supercode/config.json`:
+Enable memory explicitly by updating the `memory` block in `.supercode/config.json`:
 
 ```json
 {

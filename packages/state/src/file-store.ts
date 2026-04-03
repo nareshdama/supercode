@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, readdirSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync, existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import type {
@@ -7,6 +7,7 @@ import type {
   PermissionLogEntry,
   ResultRecord,
   SessionState,
+  SupercodeArtifactConfig,
   StoredPlan,
   ExecutionPlan,
   TaskEvent,
@@ -40,6 +41,15 @@ function now(): string {
 }
 
 const MAX_PREVIEW_LENGTH = 2000;
+const DEFAULT_ARTIFACT_POLICY: SupercodeArtifactConfig = {
+  maxEntries: 50,
+  maxTotalBytes: 5_000_000,
+  maxArtifactBytes: 1_000_000
+};
+
+export interface FileRuntimeStateStoreOptions {
+  artifactPolicy?: Partial<SupercodeArtifactConfig>;
+}
 
 function truncatePreview(value: string): string {
   if (value.length <= MAX_PREVIEW_LENGTH) {
@@ -89,9 +99,24 @@ export function getRuntimeStateLayout(cwd: string): RuntimeStateLayout {
 
 export class FileRuntimeStateStore {
   readonly layout: RuntimeStateLayout;
+  private readonly artifactPolicy: SupercodeArtifactConfig;
 
-  constructor(cwd: string) {
+  constructor(cwd: string, options: FileRuntimeStateStoreOptions = {}) {
     this.layout = getRuntimeStateLayout(cwd);
+    this.artifactPolicy = {
+      maxEntries:
+        typeof options.artifactPolicy?.maxEntries === "number" && options.artifactPolicy.maxEntries > 0
+          ? Math.floor(options.artifactPolicy.maxEntries)
+          : DEFAULT_ARTIFACT_POLICY.maxEntries,
+      maxTotalBytes:
+        typeof options.artifactPolicy?.maxTotalBytes === "number" && options.artifactPolicy.maxTotalBytes > 0
+          ? Math.floor(options.artifactPolicy.maxTotalBytes)
+          : DEFAULT_ARTIFACT_POLICY.maxTotalBytes,
+      maxArtifactBytes:
+        typeof options.artifactPolicy?.maxArtifactBytes === "number" && options.artifactPolicy.maxArtifactBytes > 0
+          ? Math.floor(options.artifactPolicy.maxArtifactBytes)
+          : DEFAULT_ARTIFACT_POLICY.maxArtifactBytes
+    };
   }
 
   ensureLayout(): RuntimeStateLayout {
@@ -230,14 +255,14 @@ export class FileRuntimeStateStore {
     if (input.data !== undefined) {
       const serialized = JSON.stringify(input.data);
       if (serialized.length > MAX_PREVIEW_LENGTH) {
-        // Store full data as an artifact file.
-        artifactRef = artifactRef ?? resultRef;
-        writeFileSync(
-          path.join(this.layout.artifactsDir, `${artifactRef}.json`),
-          `${serialized}\n`,
-          "utf8"
-        );
         preview = truncatePreview(serialized);
+        const nextArtifactRef = artifactRef ?? resultRef;
+        if (this.tryWriteArtifact(nextArtifactRef, "json", `${serialized}\n`)) {
+          artifactRef = nextArtifactRef;
+        } else {
+          artifactRef = undefined;
+          preview = `${preview}\n[artifact omitted: exceeds configured size limit]`;
+        }
       } else {
         preview = serialized;
       }
@@ -263,6 +288,7 @@ export class FileRuntimeStateStore {
       resultRefs: [...new Set([record.resultRef, ...session.resultRefs])].slice(0, 50)
     };
     this.saveSession(nextSession);
+    this.pruneArtifacts();
     return clone(record);
   }
 
@@ -393,8 +419,8 @@ export class FileRuntimeStateStore {
 
   saveArtifact(resultRef: string, content: string): string {
     this.ensureLayout();
-    const artifactPath = path.join(this.layout.artifactsDir, `${resultRef}.txt`);
-    writeFileSync(artifactPath, content, "utf8");
+    const artifactPath = this.writeArtifact(resultRef, "txt", content);
+    this.pruneArtifacts();
     return artifactPath;
   }
 
@@ -411,5 +437,94 @@ export class FileRuntimeStateStore {
       }
     }
     return undefined;
+  }
+
+  private tryWriteArtifact(resultRef: string, extension: "json" | "txt", content: string): boolean {
+    if (Buffer.byteLength(content, "utf8") > this.artifactPolicy.maxArtifactBytes) {
+      return false;
+    }
+
+    this.writeArtifact(resultRef, extension, content);
+    return true;
+  }
+
+  private writeArtifact(resultRef: string, extension: "json" | "txt", content: string): string {
+    if (Buffer.byteLength(content, "utf8") > this.artifactPolicy.maxArtifactBytes) {
+      throw new Error(
+        `Artifact ${resultRef}.${extension} exceeds the configured size limit of ${this.artifactPolicy.maxArtifactBytes} bytes.`
+      );
+    }
+
+    const artifactPath = path.join(this.layout.artifactsDir, `${resultRef}.${extension}`);
+    writeFileSync(artifactPath, content, "utf8");
+    return artifactPath;
+  }
+
+  private pruneArtifacts(): void {
+    if (!existsSync(this.layout.artifactsDir)) {
+      return;
+    }
+
+    const artifactEntries = readdirSync(this.layout.artifactsDir, { withFileTypes: true })
+      .filter(entry => entry.isFile() && [".json", ".txt"].includes(path.extname(entry.name)))
+      .map(entry => {
+        const fullPath = path.join(this.layout.artifactsDir, entry.name);
+        const stats = statSync(fullPath);
+        return {
+          artifactRef: path.basename(entry.name, path.extname(entry.name)),
+          path: fullPath,
+          size: stats.size,
+          mtimeMs: stats.mtimeMs
+        };
+      })
+      .sort((left, right) => {
+        if (left.mtimeMs !== right.mtimeMs) {
+          return left.mtimeMs - right.mtimeMs;
+        }
+        return left.path.localeCompare(right.path);
+      });
+
+    let totalBytes = artifactEntries.reduce((sum, entry) => sum + entry.size, 0);
+    const removedArtifactRefs = new Set<string>();
+
+    while (
+      artifactEntries.length > this.artifactPolicy.maxEntries ||
+      totalBytes > this.artifactPolicy.maxTotalBytes
+    ) {
+      const oldest = artifactEntries.shift();
+      if (!oldest) {
+        break;
+      }
+      rmSync(oldest.path, { force: true });
+      totalBytes -= oldest.size;
+      removedArtifactRefs.add(oldest.artifactRef);
+    }
+
+    if (removedArtifactRefs.size > 0) {
+      this.clearPrunedArtifactRefs(removedArtifactRefs);
+    }
+  }
+
+  private clearPrunedArtifactRefs(artifactRefs: ReadonlySet<string>): void {
+    if (!existsSync(this.layout.resultsDir)) {
+      return;
+    }
+
+    for (const entry of readdirSync(this.layout.resultsDir, { withFileTypes: true })) {
+      if (!entry.isFile() || !entry.name.endsWith(".json")) {
+        continue;
+      }
+
+      const resultPath = path.join(this.layout.resultsDir, entry.name);
+      const record = readJson<ResultRecord>(resultPath);
+      if (!record || !record.artifactRef || !artifactRefs.has(record.artifactRef)) {
+        continue;
+      }
+
+      writeJson(resultPath, {
+        ...record,
+        artifactRef: undefined
+      });
+    }
   }
 }

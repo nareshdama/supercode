@@ -38,6 +38,10 @@ Status: fixed in [builtin-tools.ts](packages/tools/src/builtin-tools.ts).
 3. Regression coverage for the above boundary issues.
 Status: added in [builtin-tools.test.mjs](packages/tools/test/builtin-tools.test.mjs).
 
+4. Artifact retention and size-bound enforcement for persisted outputs.
+Before this review close-out, large persisted artifacts could accumulate indefinitely under `.supercode/artifacts/`, and there was no explicit maximum artifact size.
+Status: fixed in [file-store.ts](packages/state/src/file-store.ts) with configurable entry-count and byte-size limits, oversized-artifact rejection, and regression coverage in [file-store.test.mjs](packages/state/test/file-store.test.mjs).
+
 ## Findings
 
 - No current blocker was found in plugin cycle detection or invalid tool-reference validation. The workflow validator explicitly rejects duplicate plugin identifiers, duplicate command names, invalid hook failure policies, unknown tool references, and plugin-local tool cycles in [index.ts](packages/workflows/src/index.ts).
@@ -48,12 +52,11 @@ Status: added in [builtin-tools.test.mjs](packages/tools/test/builtin-tools.test
 
 - `shell.exec` still executes arbitrary commands within the allowed workspace once permitted. This is intentional but high risk by design.
 - Plugin tools can compose existing runtime tools. Validation and cycle detection reduce structural risk, but plugins remain a privileged extension surface once enabled.
-- Result and artifact persistence writes under `.supercode/`. The artifact filenames are runtime-generated IDs, which avoids path injection, but retention and disk growth still need operational monitoring.
+- Result and artifact persistence writes under `.supercode/`. Artifact filenames remain runtime-generated IDs, retention and size limits are now enforced, and operational disk-growth monitoring still remains necessary.
 - MCP remains the most security-sensitive subsystem. The design contract is stronger than the current implementation evidence, so Phase 8 should continue with explicit MCP-focused adversarial tests.
 
 ## Recommended Next Hardening Steps
 
 - Add adversarial tests for MCP trust and quarantine transitions.
 - Add negative tests for plugin hooks invoking denied tools through permission prompts.
-- Add retention and size-bound checks for persisted artifacts under `.supercode/artifacts/`.
 - Add a small security regression suite for workspace-boundary enforcement across all first-party tools.

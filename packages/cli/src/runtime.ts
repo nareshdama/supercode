@@ -210,6 +210,11 @@ function createDefaultConfig(executionProfile: ExecutionProfile): SupercodeConfi
         maxEntries: 200
       }
     },
+    artifacts: {
+      maxEntries: 50,
+      maxTotalBytes: 5_000_000,
+      maxArtifactBytes: 1_000_000
+    },
     createdAt: timestamp,
     updatedAt: timestamp
   };
@@ -245,6 +250,20 @@ function loadRuntimeConfig(cwd: string, executionProfile: ExecutionProfile): Sup
             ? Math.max(0, Math.min(1, configuredMemory.defaultImportance))
             : fallback.memory.defaultImportance,
         retention: configuredMemory.retention ?? fallback.memory.retention
+      },
+      artifacts: {
+        maxEntries:
+          typeof parsed.artifacts?.maxEntries === "number" && parsed.artifacts.maxEntries > 0
+            ? Math.floor(parsed.artifacts.maxEntries)
+            : fallback.artifacts.maxEntries,
+        maxTotalBytes:
+          typeof parsed.artifacts?.maxTotalBytes === "number" && parsed.artifacts.maxTotalBytes > 0
+            ? Math.floor(parsed.artifacts.maxTotalBytes)
+            : fallback.artifacts.maxTotalBytes,
+        maxArtifactBytes:
+          typeof parsed.artifacts?.maxArtifactBytes === "number" && parsed.artifacts.maxArtifactBytes > 0
+            ? Math.floor(parsed.artifacts.maxArtifactBytes)
+            : fallback.artifacts.maxArtifactBytes
       },
       createdAt: parsed.createdAt ?? fallback.createdAt,
       updatedAt: parsed.updatedAt ?? fallback.updatedAt
@@ -437,7 +456,9 @@ export function createPersistedRuntimeContext(
   permissionOverrides: RuntimePermissionOverrides = {}
 ): PersistedRuntimeContext {
   const config = loadRuntimeConfig(cwd, executionProfile);
-  const stateStore = new FileRuntimeStateStore(cwd);
+  const stateStore = new FileRuntimeStateStore(cwd, {
+    artifactPolicy: config.artifacts
+  });
   stateStore.ensureLayout();
   const session = stateStore.loadOrCreateSession();
   const taskManager = new InMemoryTaskManager({

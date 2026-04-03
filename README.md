@@ -1,13 +1,13 @@
 # Supercode
 
-Supercode is an adaptive developer orchestration framework. The current repository has Phases 1 through 7 implemented and is now in Phase 8 hardening: release checks, security review, performance baselining, docs verification, and example tutorials are in-repo.
+Supercode is an adaptive developer orchestration framework. The current repository has Phases 1 through 8 implemented, including the Phase 8 hardening deliverables: release checks, security review, performance baselining, docs verification, and example tutorials.
 
 ## Development Status
 
-- Current phase: Phase 8: Hardening and Launch
-- Delivery status: pre-release development, release gating in progress
+- Current phase: Phase 8: Hardening and Launch, complete as of 2026-04-02
+- Delivery status: release-candidate ready
 - Completed roadmap slices: bootstrap, execution kernel, model control plane, MCP production layer, memory layer, workflow and extension layer, and install-path validation
-- Current priority: keep docs, examples, install flows, and release artifacts aligned with shipped behavior
+- Current priority: keep the release gate green and prepare the first tagged release candidate
 
 ## Packages
 
@@ -211,7 +211,7 @@ The execution kernel is now resilient with structured result storage and task re
 - **Enhanced `result list`**: shows truncated preview and `[has-artifact]` indicator for results with stored full output
 - **Enhanced `result show`**: displays the preview with safe truncation and links to the artifact path for full output access
 - **Permission gates**: retry and resume both evaluate permission gates for shell and filesystem categories before re-executing steps
-- **Result retention**: up to 50 result references are tracked in the session; full outputs are stored as artifact files alongside the truncated preview
+- **Result retention**: up to 50 result references are tracked in the session; full outputs are stored as artifact files alongside the truncated preview, with configurable artifact count and size limits
 
 ## Phase 3: Model Control Plane
 
@@ -237,7 +237,7 @@ The MCP runtime is now lifecycle-aware and production-oriented:
 
 The memory layer is now operational as an optional runtime feature:
 - `@supercode/memory` provides local memory storage, retrieval scoring, retention helpers, and a SimpleMem adapter seam
-- `.supercode/config.json` now carries explicit memory configuration and keeps memory disabled by default
+- `.supercode/config.json` now carries explicit memory and artifact-retention configuration and keeps memory disabled by default
 - `.supercode/memory/` persists memory records across runs
 - `supercode run <task>` retrieves matching session memory when enabled and stores new task/result memories automatically
 - `supercode memory list [query]` and `supercode memory show <memory-id>` expose persisted memory records for inspection
@@ -272,4 +272,4 @@ The workflow and extension layer is now functionally complete:
 
 ## Current Development Focus
 
-Phase 8 hardening is underway. The architecture-complete and install-validated codebase now has release assets in place, and the remaining work is to close the release gate with current docs, current examples, repeated install validation, and final hardening passes. See [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
+Phase 8 is complete as of 2026-04-02. The architecture-complete and install-validated codebase now has the release gate, current docs, package/install smoke validation, and artifact-retention controls in place. Ongoing work is operational release management rather than Phase 8 feature completion. See [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).

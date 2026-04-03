@@ -4,9 +4,9 @@
 
 Supercode already has the right core shape for curated workflow content:
 
-- pack manifests in [manifests.ts](D:\SuperCode\Supercode\packages\workflows\src\manifests.ts)
-- pack and plugin loading in [index.ts](D:\SuperCode\Supercode\packages\workflows\src\index.ts)
-- project bootstrap guidance in [scaffold.ts](D:\SuperCode\Supercode\packages\cli\src\scaffold.ts)
+- pack manifests in [manifests.ts](../../packages/workflows/src/manifests.ts)
+- pack and plugin loading in [index.ts](../../packages/workflows/src/index.ts)
+- project bootstrap guidance in [scaffold.ts](../../packages/cli/src/scaffold.ts)
 
 The next useful step is not a new subsystem. It is richer content and clearer contracts.
 
@@ -55,7 +55,7 @@ If Supercode grows richer multi-worker orchestration, use a single normalized se
 
 ## Current Gaps In Supercode
 
-- pack `references` arrays are empty in [manifests.ts](D:\SuperCode\Supercode\packages\workflows\src\manifests.ts)
+- pack `references` arrays are empty in [manifests.ts](../../packages/workflows/src/manifests.ts)
 - pack content is still minimal compared with the plugin and hook runtime already implemented
 - there is no formal contract yet for multi-session or worker snapshots
 

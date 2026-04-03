@@ -128,7 +128,7 @@ function createWorkflowGuide(profile: ExecutionProfile): string {
     `- ${selectedPacks}`,
     "",
     "Local customization paths:",
-    "- `.supercode/config.json` for runtime defaults such as memory settings",
+    "- `.supercode/config.json` for runtime defaults such as memory and artifact retention settings",
     "- `.supercode/extensions/local/hooks.json` for active local lifecycle hooks",
     "- `.supercode/extensions/local/hooks.example.json` for a copy-safe hook template",
     "- `.supercode/extensions/plugins/plugin.example.json` for a copy-safe plugin manifest template",
@@ -317,6 +317,11 @@ export function initializeProject(cwd: string, options: InitProjectOptions): Ini
         strategy: "count-bound",
         maxEntries: 200
       }
+    },
+    artifacts: {
+      maxEntries: 50,
+      maxTotalBytes: 5_000_000,
+      maxArtifactBytes: 1_000_000
     },
     createdAt: timestamp,
     updatedAt: timestamp

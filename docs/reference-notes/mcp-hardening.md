@@ -4,9 +4,9 @@
 
 Supercode already has a solid MCP baseline:
 
-- config parsing in [config.ts](D:\SuperCode\Supercode\packages\mcp\src\config.ts)
-- runtime health and session control in [runtime.ts](D:\SuperCode\Supercode\packages\mcp\src\runtime.ts) and [session.ts](D:\SuperCode\Supercode\packages\mcp\src\session.ts)
-- trust classification in [trust.ts](D:\SuperCode\Supercode\packages\mcp\src\trust.ts)
+- config parsing in [config.ts](../../packages/mcp/src/config.ts)
+- runtime health and session control in [runtime.ts](../../packages/mcp/src/runtime.ts) and [session.ts](../../packages/mcp/src/session.ts)
+- trust classification in [trust.ts](../../packages/mcp/src/trust.ts)
 
 ## Useful Patterns To Keep
 

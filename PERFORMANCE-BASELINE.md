@@ -17,16 +17,16 @@ Scenarios:
 - `result list` after one `run`
 
 Latest baseline:
-- Recorded at `2026-04-02T15:35:44.464Z`
+- Recorded at `2026-04-03T00:17:40.877Z`
 - Sample count per scenario: `3`
 
 | Scenario | Min (ms) | Avg (ms) | Max (ms) |
 | --- | ---: | ---: | ---: |
-| `doctor --json` | `0.78` | `1.63` | `3.30` |
-| `extension validate` | `0.17` | `0.31` | `0.59` |
-| `mcp list` | `2.78` | `3.22` | `3.72` |
-| `run "profile baseline"` | `14.89` | `16.01` | `18.22` |
-| `result list` after one run | `3.45` | `5.82` | `10.07` |
+| `doctor --json` | `0.95` | `1.97` | `3.88` |
+| `extension validate` | `0.22` | `0.40` | `0.73` |
+| `mcp list` | `3.56` | `4.27` | `5.46` |
+| `run "profile baseline"` | `20.65` | `22.64` | `25.18` |
+| `result list` after one run | `4.75` | `7.34` | `12.49` |
 
 Interpretation:
 - This baseline is intended as a regression detector, not a cross-machine benchmark.

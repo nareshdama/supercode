@@ -5,7 +5,7 @@ This tutorial focuses on the local extension surface that ships with `supercode 
 ## 1. Initialize And Inspect The Project
 
 ```bash
-npx supercode init
+npx @nareshdama/supercode init
 supercode extension list
 supercode plugin list
 ```

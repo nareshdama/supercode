@@ -2,4 +2,8 @@ node_modules/
 dist/
 *.tsbuildinfo
 .supercode/
+.tmp-phase2-mcp/
+.tmp-phase2-smoke/
 .tmp-phase7-smoke/
+tests.tap
+test_output.txt

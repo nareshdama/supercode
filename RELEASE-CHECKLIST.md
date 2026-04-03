@@ -16,7 +16,7 @@ Phase 8 established this gate. Keep it green before each tagged public release.
 
 ## Package And Install Validation
 
-- Verify `npx supercode init` works from a clean machine or clean temp directory
+- Verify `npx @nareshdama/supercode init` works from a clean machine or clean temp directory
 - Verify `npm install @nareshdama/core` works as a consumer install path
 - Verify source checkout usage works with `npm install`, `npm run build`, and `node packages/cli/dist/index.js doctor`
 - Verify published tarballs do not ship build metadata or unintended files

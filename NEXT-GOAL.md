@@ -1,22 +1,26 @@
-# Current Goal: Stable Release Cut
+# Current Goal: Post-Release Stabilization
 
-Phase 8 is complete as of 2026-04-02. The repository has passed the full in-repo release gate, including `npm run smoke:phase7`, and is prepared for the first stable `0.1.0` release cut.
+`0.1.0` is now shipped. The next goal is to stabilize the published line, improve contributor and developer onboarding, and prepare the repository for low-friction patch releases.
 
 Objective:
-- ship the first tagged stable release from the green Phase 8 baseline
 
-Current state after Phase 8:
-- The execution kernel, model control plane, MCP layer, memory layer, workflow and extension layer, and install-path smoke coverage are in place.
-- Hardening assets are current in-repo: release checklist, security review, performance baseline, docs verification, and example tutorials.
-- Artifact persistence now has retention and size bounds, closing the highest-risk open follow-up called out during Phase 8.
-- The repository root and docs are aligned to the standalone `Supercode` project layout.
+- make the published `0.1.x` line easier to maintain, adopt, and extend safely
 
-Current release operations:
-- keep `npm run build`, `npm test`, `npm run coverage:gate`, `npm run profile:baseline`, `npm run smoke:phase7`, and `npm run verify:docs` green before the `0.1.0` tag and any follow-up patch releases
-- record the shipped version and release date in the release decision flow
-- keep [README.md](README.md), [STATUS.md](STATUS.md), and [examples/README.md](examples/README.md) aligned with actual CLI behavior as packaging evolves
-- treat additional MCP and plugin adversarial coverage as ongoing hardening, not as a blocker to closing Phase 8
+Immediate priorities:
+
+- keep `npm run build`, `npm test`, `npm run coverage:gate`, `npm run profile:baseline`, `npm run smoke:phase7`, and `npm run verify:docs` green before any patch release
+- maintain the new top-level docs set: [CONTRIBUTING.md](CONTRIBUTING.md), [DEVELOPING.md](DEVELOPING.md), [PROJECT-SCOPE.md](PROJECT-SCOPE.md), [ROADMAP.md](ROADMAP.md), [README.md](README.md), and [STATUS.md](STATUS.md)
+- validate published package contents and install paths whenever package metadata or release scripts change
+- continue MCP and plugin adversarial coverage as the highest-value hardening stream after launch
+
+Near-term outcomes:
+
+- cleaner patch-release workflow
+- less docs drift between public package behavior and repo docs
+- better contributor onboarding
+- better guidance for teams embedding the runtime packages
 
 Notes:
+
 - [NEXT-GOAL-M3.md](NEXT-GOAL-M3.md) remains the retained implementation record for the completed resilient execution-kernel milestone.
-- The next milestone after `0.1.0` is post-release stabilization rather than another architecture phase.
+- The next roadmap phases are now tracked in [ROADMAP.md](ROADMAP.md).

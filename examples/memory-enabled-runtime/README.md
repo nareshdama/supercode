@@ -5,7 +5,7 @@ This tutorial shows the smallest useful memory-enabled flow.
 ## 1. Initialize A Project
 
 ```bash
-npx supercode init
+npx @nareshdama/supercode init
 supercode doctor
 ```
 

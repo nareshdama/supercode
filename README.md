@@ -5,9 +5,19 @@ Supercode is an adaptive developer orchestration framework. The current reposito
 ## Development Status
 
 - Current phase: Phase 8: Hardening and Launch, complete as of 2026-04-02
-- Delivery status: release-ready for `0.1.0`
+- Delivery status: `0.1.0` shipped under the `@nareshdama/*` npm scope
 - Completed roadmap slices: bootstrap, execution kernel, model control plane, MCP production layer, memory layer, workflow and extension layer, and install-path validation
-- Current priority: keep the release gate green and prepare the first tagged release candidate
+- Current priority: post-release stabilization, contributor onboarding, and controlled expansion planning
+
+## Project Docs
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [DEVELOPING.md](DEVELOPING.md)
+- [PROJECT-SCOPE.md](PROJECT-SCOPE.md)
+- [ROADMAP.md](ROADMAP.md)
+- [STATUS.md](STATUS.md)
+- [NEXT-GOAL.md](NEXT-GOAL.md)
+- [masterplan.md](masterplan.md)
 
 ## Packages
 
@@ -78,7 +88,7 @@ Release publishing helpers:
 
 ```bash
 npm run publish:release:dry-run
-NPM_PUBLISH_OTP=123456 npm run publish:release
+npm run publish:release
 ```
 
 ## CLI Commands

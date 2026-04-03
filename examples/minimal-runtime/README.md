@@ -3,7 +3,7 @@
 Use the CLI to initialize a project and inspect the execution profile:
 
 ```bash
-npx supercode init
+npx @nareshdama/supercode init
 supercode doctor
 supercode run "add authentication"
 ```

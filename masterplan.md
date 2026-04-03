@@ -35,11 +35,12 @@ Do not copy directly:
 
 Supercode should extract the kernel shape, then rebuild it using the layered contracts already defined in [design.md](design.md).
 
-Current development status as of `2026-04-02`:
+Current development status as of `2026-04-03`:
 
 - Phases 1 through 8 are complete.
 - Phase 8 hardening is complete, with release checklist, security review, performance baseline, docs verification, example tutorials, install validation, and artifact-retention controls landed in-repo.
-- Current work is focused on the first stable release cut rather than major architecture expansion.
+- `0.1.0` has been shipped under the `@nareshdama/*` npm scope.
+- Current work is focused on post-release stabilization rather than major architecture expansion.
 
 ### 2.2 Memory Reference
 
@@ -114,7 +115,7 @@ Primary packages:
 
 User entrypoint:
 
-- `supercode`
+- `@nareshdama/supercode`
 
 Initial commands:
 
@@ -134,7 +135,7 @@ Initial commands:
 
 User entrypoint:
 
-- `npx supercode init`
+- `npx @nareshdama/supercode init`
 
 This should:
 
@@ -398,7 +399,7 @@ Goal:
 Deliverables:
 
 - npm publish flow
-- `npx supercode init`
+- `npx @nareshdama/supercode init`
 - Windows and Unix install scripts
 - standalone repo quick-start
 - package smoke tests across install modes
@@ -406,7 +407,7 @@ Deliverables:
 Exit criteria:
 
 - fresh machine smoke test succeeds for:
-  - `npx supercode init`
+- `npx @nareshdama/supercode init`
   - `npm install @nareshdama/core`
   - clone-and-run standalone repo path
 
@@ -454,10 +455,10 @@ Do not make v1 depend on:
 
 ### 9.1 Package Names
 
-Recommended initial names:
+Published package names:
 
-- `supercode`: CLI package
-- `create-supercode`: project scaffolder
+- `@nareshdama/supercode`: CLI package
+- `@nareshdama/create-supercode`: project scaffolder
 - `@nareshdama/core`
 - `@nareshdama/models`
 - `@nareshdama/mcp`
@@ -476,9 +477,10 @@ Recommended initial names:
 
 User-facing install paths:
 
-- `npm install supercode`
+- `npm install @nareshdama/supercode`
+- `npm install @nareshdama/create-supercode`
 - `npm install @nareshdama/core`
-- `npm install -g supercode`
+- `npx @nareshdama/supercode init`
 - `git clone <repo>`
 
 ## 10. Possibility Space
@@ -547,7 +549,7 @@ Mitigation:
 2. Build a codemap from the runtime reference that maps its tool, task, permission, MCP, and state patterns into the new package boundaries.
 3. Define the first stable CLI surface: `init`, `doctor`, `run`, and `mcp`.
 4. Implement contract tests directly from [traceability-matrix.md](traceability-matrix.md).
-5. Add a minimal example project that proves `npx supercode init` and `supercode run`.
+5. Add a minimal example project that proves `npx @nareshdama/supercode init` and `supercode run`.
 6. Treat memory as phase 5, not as a prerequisite for the kernel.
 7. Distill the first curated workflow pack from the workflow reference into Supercode-native skills and rules.
 

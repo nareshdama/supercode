@@ -106,6 +106,7 @@ function verifyExampleCommands(exampleReadme, helpCommands, label) {
     .map(normalizeCommandPrefix);
   const commands = extractShellCommands(exampleReadme)
     .map(line => line.startsWith("npx supercode ") ? line.replace(/^npx\s+/, "") : line)
+    .map(line => line.startsWith("npx @nareshdama/supercode ") ? line.replace(/^npx\s+@nareshdama\/supercode/, "supercode") : line)
     .filter(line => line.startsWith("supercode "));
 
   const invalid = commands.filter(command => !helpPrefixes.some(prefix => command === prefix || command.startsWith(`${prefix} `)));

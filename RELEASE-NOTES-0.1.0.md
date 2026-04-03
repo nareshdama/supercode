@@ -13,7 +13,7 @@ Release date: `2026-04-02`
 - Lifecycle-aware MCP runtime with trust posture, health handling, and invocation support
 - Optional memory layer with persisted local memory inspection commands
 - Workflow packs, local hooks, plugins, plugin commands, plugin run steps, and extension validation
-- Install-path validation for `npx supercode init`, `npm install @nareshdama/core`, and source-checkout usage
+- Install-path validation for `npx @nareshdama/supercode init`, `npm install @nareshdama/core`, and source-checkout usage
 - Release hardening artifacts: coverage gate, performance baseline, security review, example tutorials, and docs verification
 - Artifact-retention hardening for persisted runtime outputs with configurable count and size limits
 

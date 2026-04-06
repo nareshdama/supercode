@@ -17,7 +17,7 @@ Supercode is an adaptive developer orchestration framework. The current reposito
 - [ROADMAP.md](ROADMAP.md)
 - [STATUS.md](STATUS.md)
 - [NEXT-GOAL.md](NEXT-GOAL.md)
-- [masterplan.md](masterplan.md)
+- [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md)
 
 ## Packages
 

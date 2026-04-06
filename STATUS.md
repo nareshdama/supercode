@@ -31,4 +31,4 @@
 - Persisted artifacts under `.supercode/artifacts/` now have configured retention and size limits, but still need operational monitoring as usage grows.
 - Docs drift remains a release risk, which is why `npm run verify:docs` is part of the Phase 8 gate.
 
-For the full roadmap, see [masterplan.md](masterplan.md).
+For the active roadmap, see [ROADMAP.md](ROADMAP.md).

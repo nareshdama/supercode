@@ -117,7 +117,7 @@ Notes:
 - [NEXT-GOAL.md](NEXT-GOAL.md): current execution focus
 - [ROADMAP.md](ROADMAP.md): next phases
 - [PROJECT-SCOPE.md](PROJECT-SCOPE.md): intended product boundary
-- [masterplan.md](masterplan.md): long-horizon architecture and rationale
+- [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md): release gate and pre-publish checks
 
 ## Current Priority
 

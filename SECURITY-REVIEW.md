@@ -15,7 +15,7 @@ Reviewed components:
 - [packages/cli/src/runtime.ts](packages/cli/src/runtime.ts)
 - [packages/workflows/src/index.ts](packages/workflows/src/index.ts)
 - [packages/state/src/file-store.ts](packages/state/src/file-store.ts)
-- [mcp-lifecycle-security.md](mcp-lifecycle-security.md)
+- [docs/reference-notes/mcp-hardening.md](docs/reference-notes/mcp-hardening.md)
 
 ## Current Posture
 
@@ -45,7 +45,7 @@ Status: fixed in [file-store.ts](packages/state/src/file-store.ts) with configur
 ## Findings
 
 - No current blocker was found in plugin cycle detection or invalid tool-reference validation. The workflow validator explicitly rejects duplicate plugin identifiers, duplicate command names, invalid hook failure policies, unknown tool references, and plugin-local tool cycles in [index.ts](packages/workflows/src/index.ts).
-- MCP controls are documented strongly in [mcp-lifecycle-security.md](mcp-lifecycle-security.md) and partially enforced in runtime code, but this remains a high-risk surface because it combines transport, trust, and external tool execution.
+- MCP controls are summarized in [docs/reference-notes/mcp-hardening.md](docs/reference-notes/mcp-hardening.md) and partially enforced in runtime code, but this remains a high-risk surface because it combines transport, trust, and external tool execution.
 - Permission behavior is conservative for shell, network, and MCP categories, but filesystem actions default to allow. That is acceptable for the current local-tooling model, but it is a release sensitivity if Supercode expands beyond explicitly user-scoped workspaces.
 
 ## Residual Risks

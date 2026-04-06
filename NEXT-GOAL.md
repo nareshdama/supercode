@@ -22,5 +22,4 @@ Near-term outcomes:
 
 Notes:
 
-- [NEXT-GOAL-M3.md](NEXT-GOAL-M3.md) remains the retained implementation record for the completed resilient execution-kernel milestone.
 - The next roadmap phases are now tracked in [ROADMAP.md](ROADMAP.md).

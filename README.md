@@ -11,6 +11,7 @@ Supercode is an adaptive developer orchestration framework. The current reposito
 
 ## Project Docs
 
+- [HANDOFF.md](HANDOFF.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [DEVELOPING.md](DEVELOPING.md)
 - [PROJECT-SCOPE.md](PROJECT-SCOPE.md)

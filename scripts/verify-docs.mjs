@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -6,6 +6,7 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const readmePath = path.join(rootDir, "README.md");
 const examplesDir = path.join(rootDir, "examples");
 const cliEntrypoint = path.join(rootDir, "packages", "cli", "dist", "index.js");
+let docsValidation;
 
 function fail(message) {
   throw new Error(message);
@@ -39,42 +40,10 @@ async function getCliHelpLines() {
   return lines.flatMap(line => line.split(/\r?\n/));
 }
 
-function getSection(text, heading) {
-  const escapedHeading = heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = text.match(new RegExp(`^## ${escapedHeading}\\r?\\n([\\s\\S]*?)(?=^## |\\Z)`, "m"));
-  return match?.[1] ?? "";
-}
-
-function parseReadmeCommands(text) {
-  return getSection(text, "CLI Commands")
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line.startsWith("- `supercode "))
-    .map(line => line.slice(3, -1));
-}
-
 function parseHelpCommands(lines) {
   return lines
     .map(line => line.trim())
     .filter(line => line.startsWith("supercode "));
-}
-
-function normalizeCommandPrefix(command) {
-  return command
-    .replace(/\s+\[[^\]]+\]/g, "")
-    .replace(/\s+<[^>]+>/g, "")
-    .trim();
-}
-
-function extractShellCommands(text) {
-  const blocks = [...text.matchAll(/```bash\r?\n([\s\S]*?)```/g)];
-  return blocks.flatMap(match =>
-    match[1]
-      .split(/\r?\n/)
-      .map(line => line.trim())
-      .filter(Boolean)
-      .filter(line => !line.startsWith("#"))
-  );
 }
 
 function verifyReadmeCommands(readmeCommands, helpCommands) {
@@ -101,43 +70,27 @@ function verifyRequiredSnippets(readme) {
 }
 
 function verifyExampleCommands(exampleReadme, helpCommands, label) {
-  const helpPrefixes = helpCommands
-    .filter(command => !command.includes("<plugin-command>"))
-    .map(normalizeCommandPrefix);
-  const commands = extractShellCommands(exampleReadme)
-    .map(line => line.startsWith("npx supercode ") ? line.replace(/^npx\s+/, "") : line)
-    .map(line => line.startsWith("npx @nareshdama/supercode ") ? line.replace(/^npx\s+@nareshdama\/supercode/, "supercode") : line)
-    .filter(line => line.startsWith("supercode "));
-
-  const invalid = commands.filter(command => !helpPrefixes.some(prefix => command === prefix || command.startsWith(`${prefix} `)));
+  const invalid = docsValidation.findInvalidExampleCommands(exampleReadme, helpCommands);
   if (invalid.length > 0) {
     fail(`${label} contains CLI commands not covered by help output: ${invalid.join(", ")}`);
   }
-}
-
-function collectExampleReadmes() {
-  if (!existsSync(examplesDir)) {
-    return [];
-  }
-
-  const directReadme = path.join(examplesDir, "README.md");
-  const nestedReadmes = readdirSync(examplesDir, { withFileTypes: true })
-    .filter(entry => entry.isDirectory())
-    .map(entry => path.join(examplesDir, entry.name, "README.md"))
-    .filter(filePath => existsSync(filePath));
-
-  return [directReadme, ...nestedReadmes].filter(filePath => existsSync(filePath));
 }
 
 async function main() {
   const readme = readText(readmePath);
   const helpLines = await getCliHelpLines();
   const helpCommands = parseHelpCommands(helpLines);
-  const readmeCommands = parseReadmeCommands(readme);
+  const docsValidationEntrypoint = path.join(rootDir, "packages", "cli", "dist", "docs-validation.js");
+  if (!existsSync(docsValidationEntrypoint)) {
+    fail(`Missing docs validation build output at ${docsValidationEntrypoint}. Run "npm run build" first.`);
+  }
+  const importedDocsValidation = await import(pathToFileURL(docsValidationEntrypoint).href);
+  docsValidation = importedDocsValidation;
+  const readmeCommands = docsValidation.parseReadmeCommands(readme);
 
   verifyReadmeCommands(readmeCommands, helpCommands);
   verifyRequiredSnippets(readme);
-  for (const exampleReadmePath of collectExampleReadmes()) {
+  for (const exampleReadmePath of docsValidation.collectExampleReadmes(examplesDir, existsSync)) {
     verifyExampleCommands(readText(exampleReadmePath), helpCommands, path.relative(rootDir, exampleReadmePath));
   }
 

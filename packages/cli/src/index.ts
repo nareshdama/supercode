@@ -53,6 +53,12 @@ import {
   type McpInvokeInput,
   type WorkflowMatchOutput
 } from "./runtime.js";
+import { renderHelp } from "./help.js";
+import {
+  parseReleaseCheckArgs,
+  renderReleaseReadinessReport,
+  runReleaseReadiness
+} from "./release-readiness.js";
 import { initializeProject } from "./scaffold.js";
 
 export interface CliIo {
@@ -84,7 +90,8 @@ const BUILTIN_COMMAND_NAMES = [
   "pack",
   "skill",
   "rule",
-  "model"
+  "model",
+  "release"
 ];
 
 function getDefaultIo(): CliIo {
@@ -115,45 +122,6 @@ function renderProfile(profile: ExecutionProfile): string {
   ];
 
   return lines.filter((line, index) => line !== "" || (index > 0 && lines[index - 1] !== "")).join("\n");
-}
-
-function renderHelp(): string {
-  return [
-    "Supercode MVP CLI",
-    "",
-    "Commands:",
-    "  supercode init [path] [--force]",
-    "  supercode doctor [--json]",
-    "  supercode run [task]",
-    "  supercode task start <goal>",
-    "  supercode task list",
-    "  supercode task show <task-id>",
-    "  supercode task cancel <task-id>",
-    "  supercode task retry <task-id> [--force]",
-    "  supercode task resume <task-id>",
-    "  supercode session show",
-    "  supercode permission show",
-    "  supercode result list",
-    "  supercode result show <result-id>",
-    "  supercode memory list [query]",
-    "  supercode memory show <memory-id>",
-    "  supercode mcp list",
-    "  supercode mcp invoke <server-id> <tool-name> [json-args]",
-    "  supercode extension list",
-    "  supercode extension validate",
-    "  supercode plugin list",
-    "  supercode <plugin-command> [args]",
-    "  supercode pack list",
-    "  supercode pack recommend",
-    "  supercode pack recommend --apply",
-    "  supercode pack install <pack-id>",
-    "  supercode pack uninstall <pack-id>",
-    "  supercode pack sync",
-    "  supercode skill search <query>",
-    "  supercode rule search <query>",
-    "  supercode model list",
-    "  supercode model status"
-  ].join("\n");
 }
 
 function buildRuntimeState(cwd: string): RuntimeState {
@@ -453,6 +421,41 @@ export async function runCli(argv: string[] = process.argv.slice(2), io: CliIo =
       io.out(line);
     }
     return 0;
+  }
+
+  if (command === "release") {
+    if (subcommand !== "check") {
+      io.err("Usage: supercode release check [--json] [--skip-gates]");
+      return 1;
+    }
+
+    let options: ReturnType<typeof parseReleaseCheckArgs>;
+    try {
+      options = parseReleaseCheckArgs(rest);
+    } catch (error) {
+      io.err(error instanceof Error ? error.message : String(error));
+      return 1;
+    }
+
+    let report;
+    try {
+      report = runReleaseReadiness(cwd, {
+        runGates: options.runGates
+      });
+    } catch (error) {
+      io.err(error instanceof Error ? error.message : String(error));
+      return 1;
+    }
+
+    if (options.json) {
+      io.out(JSON.stringify(report, null, 2));
+    } else {
+      for (const line of renderReleaseReadinessReport(report)) {
+        io.out(line);
+      }
+    }
+
+    return report.status === "passed" ? 0 : 1;
   }
 
   if (command === "init") {

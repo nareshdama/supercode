@@ -4,6 +4,8 @@ This checklist is the canonical stable-release gate for Supercode.
 
 Phase 8 established this gate. Keep it green before each tagged public release.
 
+The CLI wrapper `supercode release check` can audit release metadata and optionally run the build/test/docs gate end-to-end. Use `supercode release check --skip-gates` for a fast static audit, or run it without `--skip-gates` from the repository root to execute the checklist commands in order.
+
 ## Build And Test
 
 - Run `npm run clean`

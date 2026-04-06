@@ -4,8 +4,8 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { createExecutionProfile } from "@nareshdama/core";
 import { detectRuntimeInputs } from "@nareshdama/detect";
+import { initializeProject } from "@nareshdama/supercode/scaffold";
 import { recommendWorkflowPacks } from "@nareshdama/workflows";
-import { initializeProject } from "supercode/scaffold";
 
 export async function runCreateSupercode(argv: string[] = process.argv.slice(2)): Promise<number> {
   const target = argv[0];
@@ -26,7 +26,7 @@ export async function runCreateSupercode(argv: string[] = process.argv.slice(2))
 
   const result = initializeProject(targetDir, {
     executionProfile,
-    resolveExecutionProfile: nextCwd => {
+    resolveExecutionProfile: (nextCwd: string) => {
       const runtime = detectRuntimeInputs(nextCwd, process.env);
       const nextRecommendation = recommendWorkflowPacks(runtime.project, runtime.host, runtime.model);
       return createExecutionProfile({

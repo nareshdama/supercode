@@ -91,6 +91,12 @@ npm run publish:release:dry-run
 npm run publish:release
 ```
 
+Release-readiness helper:
+
+```bash
+node packages/cli/dist/index.js release check --skip-gates
+```
+
 ## CLI Commands
 
 - `supercode init [path] [--force]`
@@ -113,6 +119,7 @@ npm run publish:release
 - `supercode extension list`
 - `supercode extension validate`
 - `supercode plugin list`
+- `supercode <plugin-command> [args]`
 - `supercode pack list`
 - `supercode pack recommend`
 - `supercode pack recommend --apply`
@@ -123,6 +130,7 @@ npm run publish:release
 - `supercode rule search <query>`
 - `supercode model list`
 - `supercode model status`
+- `supercode release check [--json] [--skip-gates]`
 
 ## What Phase 1 Does
 

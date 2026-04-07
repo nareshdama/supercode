@@ -1,6 +1,8 @@
 # Performance Baseline
 
-This document records the Phase 8 profiling baseline for the current local CLI flows.
+This document records the **profiling regression baseline** for local CLI flows (established in Phase 8, maintained in Phase 9+). Re-run `npm run profile:baseline` after meaningful CLI or runtime performance work and update the **Latest baseline** section below.
+
+Related: [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md), [STATUS.md](STATUS.md).
 
 Method:
 - Build the repo with `npm run build`

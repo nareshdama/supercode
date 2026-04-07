@@ -9,7 +9,7 @@ Objective:
 Immediate priorities:
 
 - keep `npm run build`, `npm test`, `npm run coverage:gate`, `npm run profile:baseline`, `npm run smoke:phase7`, and `npm run verify:docs` green before any patch release
-- maintain the new top-level docs set: [CONTRIBUTING.md](CONTRIBUTING.md), [DEVELOPING.md](DEVELOPING.md), [PROJECT-SCOPE.md](PROJECT-SCOPE.md), [ROADMAP.md](ROADMAP.md), [README.md](README.md), and [STATUS.md](STATUS.md)
+- maintain the top-level docs set: [USER-GUIDE.md](USER-GUIDE.md), [CONTRIBUTING.md](CONTRIBUTING.md), [DEVELOPING.md](DEVELOPING.md), [PROJECT-SCOPE.md](PROJECT-SCOPE.md), [ROADMAP.md](ROADMAP.md), [README.md](README.md), [STATUS.md](STATUS.md), [SECURITY-REVIEW.md](SECURITY-REVIEW.md), and [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md) when behavior or baselines change
 - validate published package contents and install paths whenever package metadata or release scripts change
 - continue MCP and plugin adversarial coverage as the highest-value hardening stream after launch
 

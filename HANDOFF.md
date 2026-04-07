@@ -4,86 +4,54 @@ Read this file first if you are picking up work in this repository.
 
 ## Current State
 
-- Phase 8 is complete and `0.1.0` is already shipped.
-- The latest pushed commits on `main` are:
-  - `c877ea7` `Archive obsolete planning docs`
-  - `055fef5` `Add release readiness checks`
-- There is local Phase 9 work in progress that is not yet committed.
+- **Phases 1–8** are complete; **`0.1.0`** is shipped on `@nareshdama/*`.
+- **Phase 9** (stabilization) and **Phase 10** (embedding / adoption) are active per [ROADMAP.md](ROADMAP.md) and [STATUS.md](STATUS.md).
+- Default branch **`main`** tracks published work; use `git log` for recent commits instead of relying on hashes in this file.
 
-## Current Local Work
+## Documentation Map (2026-04)
 
-Phase name: Release Script Execution Hardening
+| Doc | Role |
+|-----|------|
+| [README.md](README.md) | Public index, CLI command list (must match `supercode help`), Phase 8 snippet for `verify:docs` |
+| [USER-GUIDE.md](USER-GUIDE.md) | End-user CLI guide |
+| [STATUS.md](STATUS.md) | Shipped vs in-flight scope |
+| [ROADMAP.md](ROADMAP.md) | Phases 9–11 |
+| [SECURITY-REVIEW.md](SECURITY-REVIEW.md) | Threat model and residual risks |
+| [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md) | Profiling regression baseline |
+| [DEVELOPING.md](DEVELOPING.md) | Monorepo, embedding (`@nareshdama/supercode/runtime`) |
+| [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md) | Runtime subpath for host apps |
+| [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md) | Node embedding example |
 
-Goal:
-- Make release-related scripts reliable on Windows and in constrained local environments.
-- Keep `supercode release check` green end-to-end by hardening the scripts it depends on.
+## Key Implementation Areas
 
-Working tree changes currently present:
-- `scripts/lib/command-runner.mjs` (new)
-- `scripts/test/command-runner.test.mjs` (new)
-- `scripts/phase7-smoke.mjs` (modified)
-- `scripts/publish-release.mjs` (modified)
-- `scripts/test-files.mjs` (modified)
+- **CLI / runtime package:** `packages/cli/src/` — `runtime.ts` exports embedding API; `index.ts` is the CLI.
+- **Release & smoke:** `scripts/publish-release.mjs`, `scripts/phase7-smoke.mjs`, `scripts/lib/command-runner.mjs`, tests under `scripts/test/`.
+- **Docs gate:** `npm run verify:docs` (README commands + example READMEs).
 
-## What Changed In This Cycle
+## Design Decisions To Preserve
 
-- Added a shared script runner in `scripts/lib/command-runner.mjs`.
-- The runner uses file-backed stdout/stderr capture instead of `stdio: "pipe"`.
-- Windows shell mode is enabled only for `npm` and `npx` wrappers.
-- `scripts/phase7-smoke.mjs` now uses the shared runner and writes npm cache data into `.tmp-phase7-smoke/npm-cache`.
-- `scripts/publish-release.mjs` now uses the shared runner while preserving terminal output on successful runs.
-- `scripts/test-files.mjs` now includes `scripts/test/*.test.mjs`.
-- Added regression coverage in `scripts/test/command-runner.test.mjs`.
+- Release scripts remain sequential; Windows shell mode only for `npm` / `npx` where applicable.
+- `supercode release check` stays the single readiness entrypoint for releases.
+- Programmatic embedding stays **ESM-only** on `@nareshdama/supercode/runtime`.
+- Execution profile construction stays centralized (`resolveExecutionProfileInputs`) so the CLI and embedders do not drift.
 
-## Verified In This Environment
-
-These commands were run successfully after the current local changes:
+## Verified Commands (typical)
 
 ```bash
+npm run build
 npm test
+npm run verify:docs
 npm run smoke:phase7
 node packages/cli/dist/index.js release check
 ```
 
-Observed result:
-- `release check` passed end-to-end, including `Gate Phase 7 Smoke`.
+## Recommended Next Steps
 
-## Key Files To Read
-
-Start here:
-- `README.md`
-- `STATUS.md`
-- `ROADMAP.md`
-- `NEXT-GOAL.md`
-- `RELEASE-CHECKLIST.md`
-- `DEVELOPING.md` (includes programmatic embedding via `@nareshdama/supercode/runtime`)
-- `docs/reference-notes/programmatic-embedding.md`
-- `examples/programmatic-runtime/README.md`
-
-Then inspect the active release-script work:
-- `scripts/lib/command-runner.mjs`
-- `scripts/phase7-smoke.mjs`
-- `scripts/publish-release.mjs`
-- `scripts/test/command-runner.test.mjs`
-
-## Design Decisions To Preserve
-
-- Release scripts remain sequential.
-- Windows shell mode is used only for `npm` and `npx` commands.
-- Failures should surface captured stdout/stderr clearly.
-- Smoke validation should use a workspace-local temp cache instead of the user-profile npm cache.
-- `supercode release check` remains the top-level readiness entrypoint; do not create a parallel release workflow.
+1. Keep **Phase 9** green: tests, smoke, docs verification, patch-release hygiene.
+2. Extend **Phase 10**: more embedding examples, versioning guidance, or SDK polish as needed—see [ROADMAP.md](ROADMAP.md).
+3. When changing permissions, tools, MCP, or persistence, update [SECURITY-REVIEW.md](SECURITY-REVIEW.md) and [USER-GUIDE.md](USER-GUIDE.md) as appropriate.
 
 ## Known Limits
 
-- `publish-release` still depends on live npm auth and network access.
-- Script-level regression tests cover the shared runner directly, not every publish edge case.
-- Large command output is still read fully from temp files before being returned to the caller.
-
-## Recommended Next Step
-
-Build on the current Phase 9 hardening work instead of starting a new release surface.
-
-The next high-value areas are:
-1. Add stronger release-script coverage around publish decision paths and failure shaping.
-2. Extend Phase 10 embedding work (runtime subpath and [programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md) are documented; add examples or SDK polish as needed).
+- `publish-release` requires live npm auth and network for real publishes.
+- Security review is a point-in-time assessment plus ongoing maintenance; it is not a substitute for dependency and supply-chain monitoring.

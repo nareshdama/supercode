@@ -4,7 +4,9 @@
 
 - Phases 0 through 8 are complete.
 - `0.1.0` has been shipped under the `@nareshdama/*` package scope.
-- The architecture baseline is in place. The next work is stabilization, adoption quality, and controlled expansion.
+- **Phase 9** (post-release stabilization) is **active**: release scripts, smoke tests, and docs alignment with shipped behavior.
+- **Phase 10** (embedding and SDK-style usage) is **partially delivered**: `@nareshdama/supercode/runtime` profile helpers, programmatic example, reference notes, and [USER-GUIDE.md](USER-GUIDE.md) for CLI users.
+- The architecture baseline is in place; remaining work extends it rather than replacing it.
 
 ## Completed Phases
 
@@ -25,13 +27,18 @@
 Focus:
 
 - reduce packaging and install friction
-- harden publish and release operations
-- close docs gaps for contributors and downstream adopters
+- harden publish and release operations (shared script runner, Windows-safe smoke paths)
+- close docs gaps for contributors, **end users** ([USER-GUIDE.md](USER-GUIDE.md)), and downstream adopters
 - increase confidence around regression-sensitive runtime surfaces
+
+Progress (non-exhaustive):
+
+- Release and smoke scripts use shared helpers under `scripts/lib/` with regression tests under `scripts/test/`.
+- Top-level docs indexed in [README.md](README.md); user guide and embedding notes maintained alongside CLI help (`npm run verify:docs`).
 
 Exit targets:
 
-- clean contributor and developer onboarding docs
+- clean contributor, developer, and **user** onboarding docs
 - stable npm publishing workflow with scoped packages
 - repeatable patch-release process
 - reduced release friction for docs, install, and packaging changes
@@ -47,10 +54,11 @@ Focus:
 Progress (docs and API):
 
 - `@nareshdama/supercode/runtime` exposes `resolveExecutionProfileInputs`, `buildExecutionProfileForProject`, and `createPersistedRuntimeContext` aligned with the CLI profile pipeline; tutorials live under [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md) and [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md).
+- End-user CLI documentation: [USER-GUIDE.md](USER-GUIDE.md).
 
 Potential deliverables:
 
-- clearer embedding patterns around runtime construction (in progress)
+- clearer embedding patterns around runtime construction (partially delivered; continue versioning and compatibility notes)
 - stronger package-level API guidance
 - additional examples for host applications and custom tool registries
 - more explicit compatibility and versioning guidance

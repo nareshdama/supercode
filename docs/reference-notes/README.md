@@ -2,6 +2,8 @@
 
 This directory preserves the design patterns that were useful during Supercode's early architecture work without keeping the original reference archive in the repo.
 
+For **CLI usage**, see the top-level [USER-GUIDE.md](../../USER-GUIDE.md). For **embedding** the runtime from Node, see [programmatic-embedding.md](programmatic-embedding.md).
+
 The notes here are distilled for Supercode's current structure:
 
 - [workflow-packs.md](workflow-packs.md)

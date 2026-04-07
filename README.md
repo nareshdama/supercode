@@ -1,27 +1,27 @@
 # Supercode
 
-Supercode is an adaptive developer orchestration framework. The current repository has Phases 1 through 8 implemented, including the Phase 8 hardening deliverables: release checks, security review, performance baselining, docs verification, and example tutorials.
+Supercode is an adaptive developer orchestration framework. **Phases 1–8** are complete (including Phase 8 hardening: release checks, security review, performance baselining, docs verification, and example tutorials). **Phase 9** (post-release stabilization) and **Phase 10** (embedding and SDK-style usage) are in progress—see [ROADMAP.md](ROADMAP.md) and [STATUS.md](STATUS.md).
 
-**Using the CLI:** see the [User guide](USER-GUIDE.md) for install, quick start, tasks, packs, memory, MCP, and links to tutorials.
+**Using the CLI:** [USER-GUIDE.md](USER-GUIDE.md) (install, quick start, tasks, packs, memory, MCP, tutorials).
+
+**Threat model and reviews:** [SECURITY-REVIEW.md](SECURITY-REVIEW.md). **Performance regression baseline:** [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md).
 
 ## Development Status
 
-- Current phase: Phase 8: Hardening and Launch, complete as of 2026-04-02
-- Delivery status: `0.1.0` shipped under the `@nareshdama/*` npm scope
-- Completed roadmap slices: bootstrap, execution kernel, model control plane, MCP production layer, memory layer, workflow and extension layer, and install-path validation
-- Current priority: post-release stabilization, contributor onboarding, and controlled expansion planning
+- **Shipped baseline:** Phase 8: Hardening and Launch, complete as of 2026-04-02; `0.1.0` on the `@nareshdama/*` npm scope
+- **Active roadmap:** Phase 9—stabilization, release tooling, docs alignment; Phase 10—programmatic embedding via `@nareshdama/supercode/runtime`, user-facing guides, and host-app examples
+- **Current priority:** keep the release gate green, reduce docs drift, and improve adoption paths for CLI users and embedders
 
 ## Project Docs
 
-- [USER-GUIDE.md](USER-GUIDE.md)
-- [HANDOFF.md](HANDOFF.md)
-- [CONTRIBUTING.md](CONTRIBUTING.md)
-- [DEVELOPING.md](DEVELOPING.md)
-- [PROJECT-SCOPE.md](PROJECT-SCOPE.md)
-- [ROADMAP.md](ROADMAP.md)
-- [STATUS.md](STATUS.md)
-- [NEXT-GOAL.md](NEXT-GOAL.md)
-- [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md)
+| Audience | Documents |
+|----------|-----------|
+| **CLI users** | [USER-GUIDE.md](USER-GUIDE.md), [examples/README.md](examples/README.md) |
+| **Contributors** | [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) |
+| **Developers / embedders** | [DEVELOPING.md](DEVELOPING.md), [docs/reference-notes/README.md](docs/reference-notes/README.md), [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md) |
+| **Project direction** | [PROJECT-SCOPE.md](PROJECT-SCOPE.md), [ROADMAP.md](ROADMAP.md), [STATUS.md](STATUS.md), [NEXT-GOAL.md](NEXT-GOAL.md) |
+| **Release & quality** | [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md), [SECURITY-REVIEW.md](SECURITY-REVIEW.md), [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md) |
+| **Agent continuity** | [HANDOFF.md](HANDOFF.md) |
 
 ## Packages
 
@@ -81,11 +81,12 @@ npm run profile:baseline
 npm run verify:docs
 ```
 
-Phase 8 review artifacts:
+Review artifacts and tutorials:
 
 - [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md)
 - [SECURITY-REVIEW.md](SECURITY-REVIEW.md)
 - [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md)
+- [USER-GUIDE.md](USER-GUIDE.md)
 - [examples/README.md](examples/README.md)
 
 Release publishing helpers:
@@ -301,4 +302,4 @@ The workflow and extension layer is now functionally complete:
 
 ## Current Development Focus
 
-Phase 8 is complete as of 2026-04-02. The architecture-complete and install-validated codebase now has the release gate, current docs, package/install smoke validation, and artifact-retention controls in place. Ongoing work is operational release management rather than Phase 8 feature completion. See [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
+Phase 8 is complete as of 2026-04-02. Ongoing work follows **Phase 9** (patch releases, release scripts, docs/tests alignment) and **Phase 10** (embedding API, user guide, host examples)—not new Phase 8 scope. Use [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) before each public release and keep [USER-GUIDE.md](USER-GUIDE.md), [README.md](README.md) CLI command list, and `supercode help` in sync (`npm run verify:docs`).

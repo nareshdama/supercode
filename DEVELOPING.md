@@ -134,6 +134,7 @@ Notes:
 - [PROJECT-SCOPE.md](PROJECT-SCOPE.md): intended product boundary
 - [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md): release gate and pre-publish checks
 - [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md): `@nareshdama/supercode/runtime` embedding surface
+- [SECURITY-REVIEW.md](SECURITY-REVIEW.md) / [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md): update when changing trust boundaries or measured CLI performance
 
 ## Current Priority
 

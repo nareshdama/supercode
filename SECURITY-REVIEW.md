@@ -1,6 +1,7 @@
 # Security Review
 
-Date: `2026-04-02`
+Original review date: `2026-04-02`  
+Last documentation alignment: `2026-04-06` (threat model unchanged; cross-links and embedding notes refreshed)
 
 Scope:
 - permission defaults
@@ -8,6 +9,7 @@ Scope:
 - plugin and hook execution safety
 - MCP trust and lifecycle controls
 - persisted results and artifact handling
+- programmatic embedding: same runtime kernel as the CLI; host apps own log redaction and session-ID handling (see [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md), [USER-GUIDE.md](USER-GUIDE.md) safety section)
 
 Reviewed components:
 - [packages/permissions/src/permission-system.ts](packages/permissions/src/permission-system.ts)
@@ -59,7 +61,7 @@ Status: fixed in [file-store.ts](packages/state/src/file-store.ts) with configur
 - `shell.exec` still executes arbitrary commands within the allowed workspace once permitted. This is intentional but high risk by design.
 - Plugin tools can compose existing runtime tools. Validation and cycle detection reduce structural risk, but plugins remain a privileged extension surface once enabled.
 - Result and artifact persistence writes under `.supercode/`. Artifact filenames remain runtime-generated IDs, retention and size limits are now enforced, and operational disk-growth monitoring still remains necessary.
-- MCP remains the most security-sensitive subsystem. The design contract is stronger than the current implementation evidence, so Phase 8 should continue with explicit MCP-focused adversarial tests.
+- MCP remains the most security-sensitive subsystem. The design contract is stronger than the current implementation evidence, so **ongoing releases should include MCP-focused adversarial tests** (post–Phase 8 maintenance).
 
 ## Recommended Next Hardening Steps
 

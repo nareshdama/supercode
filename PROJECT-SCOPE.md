@@ -52,7 +52,7 @@ The repository is responsible for:
 - the CLI and scaffolder
 - shipped workflow packs and templates
 - packaging, verification, and release scripts
-- canonical docs for contributors and developers
+- canonical documentation for **CLI users** ([USER-GUIDE.md](USER-GUIDE.md)), **contributors** ([CONTRIBUTING.md](CONTRIBUTING.md)), and **developers / embedders** ([DEVELOPING.md](DEVELOPING.md), reference notes under [docs/reference-notes/](docs/reference-notes/README.md))
 
 It is not responsible for:
 
@@ -72,4 +72,4 @@ Changes should keep the repository:
 
 ## Current Scope Decision
 
-Phases 1 through 8 are complete. The current line is now in post-release stabilization and controlled expansion, not open-ended architectural churn. Future phases should extend the existing kernel rather than replace it.
+Phases 1 through 8 are complete. The line is in **Phase 9** (stabilization) and **Phase 10** (embedding / adoption quality)—controlled expansion, not open-ended architectural churn. Future work should extend the existing kernel and package boundaries rather than replace them; see [ROADMAP.md](ROADMAP.md).

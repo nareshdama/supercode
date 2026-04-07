@@ -188,8 +188,11 @@ The exact set of commands is maintained in the root [README.md](README.md) under
 
 | Need | Document |
 |------|----------|
-| Repo status and roadmap | [STATUS.md](STATUS.md), [ROADMAP.md](ROADMAP.md) |
+| Repo status and roadmap | [STATUS.md](STATUS.md), [ROADMAP.md](ROADMAP.md), [NEXT-GOAL.md](NEXT-GOAL.md) |
 | What this project is / is not | [PROJECT-SCOPE.md](PROJECT-SCOPE.md) |
 | Contributor workflow | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| Monorepo and embedding API | [DEVELOPING.md](DEVELOPING.md) |
-| Agent handoff / current focus | [HANDOFF.md](HANDOFF.md) |
+| Monorepo and embedding API | [DEVELOPING.md](DEVELOPING.md), [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md) |
+| Security posture and known risks | [SECURITY-REVIEW.md](SECURITY-REVIEW.md) |
+| Performance baseline (maintainers) | [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md) |
+| Release gate | [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) |
+| Agent handoff / doc map | [HANDOFF.md](HANDOFF.md) |

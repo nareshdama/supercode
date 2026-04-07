@@ -49,6 +49,20 @@ npm run profile:baseline
 4. Update docs when package names, commands, install paths, or roadmap state changes.
 5. Re-run the narrowest command set that proves the change.
 
+## Programmatic embedding
+
+The CLI package exposes a stable subpath for host apps and integration tests:
+
+```text
+@nareshdama/supercode/runtime
+```
+
+- **Module system**: ESM only (`import` / dynamic `import()`). This matches `"type": "module"` on `@nareshdama/supercode`; CommonJS `require` of this subpath is not supported.
+- **Execution profile**: Use `buildExecutionProfileForProject(cwd)` or `resolveExecutionProfileInputs(cwd)` so your embedder matches the CLI doctor/run pipeline (single detect + workflow recommendation + `createExecutionProfile`). Avoid hand-rolling imports from `@nareshdama/core`, `@nareshdama/detect`, and `@nareshdama/workflows` in application code unless you have a reason — strict package managers may not hoist nested dependencies.
+- **Full kernel**: `createPersistedRuntimeContext` constructs the persisted runtime (filesystem layout, tool registry, MCP, optional memory). It is intentionally heavier than profile-only helpers; use it when you need the same kernel as `supercode task` / `supercode run`, not for a lightweight capability check.
+
+Implementation: [`packages/cli/src/runtime.ts`](packages/cli/src/runtime.ts). Walkthrough: [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md). Deeper reference: [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md).
+
 ## Package Relationships
 
 - `core` is the shared contract layer used by nearly every runtime package.
@@ -118,6 +132,7 @@ Notes:
 - [ROADMAP.md](ROADMAP.md): next phases
 - [PROJECT-SCOPE.md](PROJECT-SCOPE.md): intended product boundary
 - [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md): release gate and pre-publish checks
+- [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md): `@nareshdama/supercode/runtime` embedding surface
 
 ## Current Priority
 

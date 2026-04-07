@@ -56,6 +56,9 @@ Start here:
 - `ROADMAP.md`
 - `NEXT-GOAL.md`
 - `RELEASE-CHECKLIST.md`
+- `DEVELOPING.md` (includes programmatic embedding via `@nareshdama/supercode/runtime`)
+- `docs/reference-notes/programmatic-embedding.md`
+- `examples/programmatic-runtime/README.md`
 
 Then inspect the active release-script work:
 - `scripts/lib/command-runner.mjs`
@@ -83,4 +86,4 @@ Build on the current Phase 9 hardening work instead of starting a new release su
 
 The next high-value areas are:
 1. Add stronger release-script coverage around publish decision paths and failure shaping.
-2. Start Phase 10 by formalizing embedding and SDK usage examples once release tooling is fully stable.
+2. Extend Phase 10 embedding work (runtime subpath and [programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md) are documented; add examples or SDK polish as needed).

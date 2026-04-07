@@ -17,9 +17,7 @@ import type {
   WorkflowPackSummary,
   WorkflowRecommendation
 } from "@nareshdama/core";
-import { createExecutionProfile } from "@nareshdama/core";
 import type { ModelDescriptor, ProviderHealth } from "@nareshdama/core";
-import { detectRuntimeInputs } from "@nareshdama/detect";
 import { detectMcpSupport } from "@nareshdama/mcp";
 import { ModelCatalog, BudgetPolicy } from "@nareshdama/models";
 import {
@@ -32,7 +30,6 @@ import {
   loadResolvedWorkflowRunSteps,
   loadWorkflowExtensionState,
   loadInstalledPackState,
-  recommendWorkflowPacks,
   searchRules,
   searchSkills,
   syncWorkflowPackState,
@@ -48,6 +45,7 @@ import {
   getRuntimeSession,
   invokeRuntimeTool,
   listRuntimeMemory,
+  resolveExecutionProfileInputs,
   runWorkflowHooks,
   saveRuntimeResult,
   type McpInvokeInput,
@@ -125,12 +123,7 @@ function renderProfile(profile: ExecutionProfile): string {
 }
 
 function buildRuntimeState(cwd: string): RuntimeState {
-  const detected = detectRuntimeInputs(cwd, process.env);
-  const workflowRecommendation = recommendWorkflowPacks(detected.project, detected.host, detected.model);
-  const executionProfile = createExecutionProfile({
-    ...detected,
-    workflowRecommendation
-  });
+  const { detected, workflowRecommendation, executionProfile } = resolveExecutionProfileInputs(cwd);
   const installedPacks = loadInstalledPackState(cwd);
   const availablePacks = listWorkflowPackSummaries();
   const mcpSummary = detectMcpSupport(cwd, detected.host, process.env);

@@ -8,10 +8,11 @@ The notes here are distilled for Supercode's current structure:
 - [memory-architecture.md](memory-architecture.md)
 - [prompt-system.md](prompt-system.md)
 - [mcp-hardening.md](mcp-hardening.md)
+- [programmatic-embedding.md](programmatic-embedding.md)
 
 Use these notes when extending:
 
-- [runtime.ts](../../packages/cli/src/runtime.ts)
+- [runtime.ts](../../packages/cli/src/runtime.ts) — see [programmatic-embedding.md](programmatic-embedding.md) for the public `./runtime` embedding surface
 - [manifests.ts](../../packages/workflows/src/manifests.ts)
 - [index.ts](../../packages/workflows/src/index.ts)
 - [prompt-registry.ts](../../packages/models/src/prompt-registry.ts)

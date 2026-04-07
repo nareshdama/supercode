@@ -15,9 +15,12 @@ import type {
   SupercodeConfig,
   TaskRecord,
   ToolExecutionContext,
-  ToolResult
+  ToolResult,
+  WorkflowRecommendation
 } from "@nareshdama/core";
 import type { WorkflowHookEvent, WorkflowHookExecution, WorkflowHookRunResult } from "@nareshdama/core";
+import { createExecutionProfile } from "@nareshdama/core";
+import { detectRuntimeInputs } from "@nareshdama/detect";
 import { InMemoryMemoryProvider, SessionMemory, SimpleMemAdapter } from "@nareshdama/memory";
 import { createMcpRuntime, type LocalMcpRuntime } from "@nareshdama/mcp";
 import { DefaultPermissionSystem } from "@nareshdama/permissions";
@@ -25,7 +28,13 @@ import { InMemoryProgressTracker } from "@nareshdama/progress";
 import { FileRuntimeStateStore } from "@nareshdama/state";
 import { InMemoryTaskManager, SimpleTaskExecutor } from "@nareshdama/tasks";
 import { ExecutableToolRegistry, registerFirstPartyTools } from "@nareshdama/tools";
-import { loadResolvedWorkflowHooks, loadResolvedWorkflowPluginTools, rankRulesForTask, rankSkillsForTask } from "@nareshdama/workflows";
+import {
+  loadResolvedWorkflowHooks,
+  loadResolvedWorkflowPluginTools,
+  rankRulesForTask,
+  rankSkillsForTask,
+  recommendWorkflowPacks
+} from "@nareshdama/workflows";
 
 export interface PersistedRuntimeContext {
   cwd: string;
@@ -80,6 +89,43 @@ export interface McpInvokeInput {
   arguments?: Record<string, unknown>;
   timeoutMs?: number;
   retryCount?: number;
+}
+
+/** Result of a single detect + workflow recommendation pass (shared with the CLI). */
+export interface ExecutionProfileInputs {
+  detected: ReturnType<typeof detectRuntimeInputs>;
+  workflowRecommendation: WorkflowRecommendation;
+  executionProfile: ExecutionProfile;
+}
+
+/**
+ * One detect pass producing the workflow recommendation and execution profile used by the CLI
+ * (`doctor`, `run`, etc.). Prefer this over re-implementing `detectRuntimeInputs` + `recommendWorkflowPacks`
+ * in embedders so behavior stays aligned when the pipeline changes.
+ */
+export function resolveExecutionProfileInputs(
+  cwd: string,
+  env: NodeJS.ProcessEnv = process.env
+): ExecutionProfileInputs {
+  const detected = detectRuntimeInputs(cwd, env);
+  const workflowRecommendation = recommendWorkflowPacks(detected.project, detected.host, detected.model);
+  const executionProfile = createExecutionProfile({
+    ...detected,
+    workflowRecommendation
+  });
+  return { detected, workflowRecommendation, executionProfile };
+}
+
+/**
+ * Builds the persisted-runtime execution profile (same composition as the CLI `buildRuntimeState`).
+ *
+ * @throws If `detectRuntimeInputs` or `createExecutionProfile` fails.
+ */
+export function buildExecutionProfileForProject(
+  cwd: string,
+  env: NodeJS.ProcessEnv = process.env
+): ExecutionProfile {
+  return resolveExecutionProfileInputs(cwd, env).executionProfile;
 }
 
 function now(): string {
@@ -450,6 +496,12 @@ function createToolRegistry(
   return registry;
 }
 
+/**
+ * Constructs the full on-disk runtime (state layout, task manager, tools, MCP, optional memory).
+ * This is intentionally heavyweight: multiple filesystem reads, registry setup, and subscribers.
+ * For a cheap smoke check, prefer {@link buildExecutionProfileForProject} or a narrow tool API;
+ * use this when you need the same persisted kernel as the CLI.
+ */
 export function createPersistedRuntimeContext(
   cwd: string,
   executionProfile: ExecutionProfile,

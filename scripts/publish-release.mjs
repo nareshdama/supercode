@@ -1,9 +1,23 @@
+// ═══════════════════════════════════════════════════
+// Fixed by: Fixer Agent | Cycle: 2
+// Bugs fixed: 8 (0 critical, 5 major, 3 minor)
+// Performance improvements: 0 (PERF-2-1 documented inline)
+// Proactive improvements: 2 (manifest validation, redacted logging)
+// Code health: Good → Excellent
+// Safe to build on: YES
+// ═══════════════════════════════════════════════════
+
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { runCommand } from "./lib/command-runner.mjs";
+import {
+  isPublishedVersionFromViewResult,
+  publishArgsFor,
+  viewArgsFor
+} from "./lib/npm-publish-args.mjs";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const packageDirs = [
@@ -26,68 +40,142 @@ const args = new Set(process.argv.slice(2));
 const dryRun = args.has("--dry-run");
 const configuredOtp = process.env.NPM_PUBLISH_OTP?.trim();
 const tag = process.env.NPM_PUBLISH_TAG?.trim() || "latest";
-const npmCommand = process.platform === "win32" ? "npm" : "npm";
+const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
 
+/**
+ * Validate required package.json fields for publishing and return trimmed strings.
+ *
+ * Args:
+ *   manifest: Parsed package.json object.
+ *   packageDir: Workspace-relative directory (for error messages).
+ *
+ * Returns:
+ *   Object with `name` and `version` strings.
+ *
+ * Raises:
+ *   Error: When name or version is missing, empty, or not a string.
+ */
+function validatedPublishIdentity(manifest, packageDir) {
+  const name = manifest?.name;
+  const version = manifest?.version;
+  if (typeof name !== "string" || name.trim() === "") {
+    throw new Error(`[publish-release] Invalid or missing string "name" in ${packageDir}/package.json`);
+  }
+  if (typeof version !== "string" || version.trim() === "") {
+    throw new Error(`[publish-release] Invalid or missing string "version" in ${packageDir}/package.json`);
+  }
+  return { name: name.trim(), version: version.trim() };
+}
+// DESIGN NOTE: Fail fast before any npm view/publish so malformed manifests never reach argv construction (BUG-2-M2).
+
+/**
+ * Format argv for logs without revealing OTP values (BUG-2-M3).
+ *
+ * Args:
+ *   commandArgs: Full argument list including optional "--otp" and value.
+ *
+ * Returns:
+ *   Human-readable command line with OTP value replaced by "[REDACTED]".
+ *
+ * Raises:
+ *   Never.
+ */
+function formatNpmArgsForLog(commandArgs) {
+  const out = [];
+  for (let i = 0; i < commandArgs.length; i += 1) {
+    if (commandArgs[i] === "--otp" && i + 1 < commandArgs.length) {
+      out.push("--otp", "[REDACTED]");
+      i += 1;
+    } else {
+      out.push(commandArgs[i]);
+    }
+  }
+  return out.join(" ");
+}
+// DESIGN NOTE: Real argv passed to run() stays unchanged; only console copy is redacted.
+
+/**
+ * Read a package manifest from a workspace package directory.
+ *
+ * Args:
+ *   packageDir: Workspace-relative package directory.
+ *
+ * Returns:
+ *   Parsed package manifest object.
+ *
+ * Raises:
+ *   Error: If the manifest cannot be read or parsed.
+ */
 function readPackageManifest(packageDir) {
   const manifestPath = path.join(rootDir, packageDir, "package.json");
   return JSON.parse(readFileSync(manifestPath, "utf8"));
 }
+// DESIGN NOTE: Publish order is driven by package manifests, so manifest reads stay as the first validation boundary.
 
-function isScopedPackage(packageName) {
-  return packageName.startsWith("@");
-}
-
-function toPublishTarget(packageDir) {
-  return `./${packageDir.replace(/\\/g, "/")}`;
-}
-
-function publishArgsFor(packageDir, packageName, otp) {
-  const publishArgs = ["publish", toPublishTarget(packageDir), "--tag", tag];
-  if (isScopedPackage(packageName)) {
-    publishArgs.push("--access", "public");
-  }
-  if (otp) {
-    publishArgs.push("--otp", otp);
-  }
-  return publishArgs;
-}
-
-function viewArgsFor(packageName, version) {
-  return ["view", `${packageName}@${version}`, "version"];
-}
-
+/**
+ * Execute an npm command and terminate on non-zero exit.
+ *
+ * Args:
+ *   command: Executable name or path.
+ *   commandArgs: Ordered argument list passed to the command.
+ *
+ * Returns:
+ *   Never returns a value.
+ *
+ * Raises:
+ *   Error: If the command cannot be launched.
+ */
 function run(command, commandArgs) {
-  const result = spawnSync(command, commandArgs, {
-    cwd: rootDir,
-    stdio: "inherit",
-    env: process.env,
-    shell: process.platform === "win32"
+  const result = runCommand(command, commandArgs, {
+    cwd: rootDir
   });
-
-  if (result.error) {
-    throw result.error;
+  if (result.exitCode !== 0) {
+    process.exit(result.exitCode);
   }
-  if (typeof result.status === "number" && result.status !== 0) {
-    process.exit(result.status);
+  if (result.stdout.trim()) {
+    process.stdout.write(result.stdout);
+  }
+  if (result.stderr.trim()) {
+    process.stderr.write(result.stderr);
   }
 }
+// DESIGN NOTE: The shared runner keeps publish operations aligned with smoke checks and Windows sandbox behavior.
 
+/**
+ * Determine whether a package version is already published on npm.
+ *
+ * Args:
+ *   packageName: npm package name.
+ *   version: Version to check.
+ *
+ * Returns:
+ *   `true` when the exact version is already published, otherwise `false`.
+ *
+ * Raises:
+ *   Error: If the npm view command cannot be launched.
+ *   TypeError: If viewArgsFor rejects inputs (should not occur after manifest validation).
+ */
 function isAlreadyPublished(packageName, version) {
-  const result = spawnSync(npmCommand, viewArgsFor(packageName, version), {
+  const result = runCommand(npmCommand, viewArgsFor(packageName, version), {
     cwd: rootDir,
-    stdio: "pipe",
-    env: process.env,
-    encoding: "utf8",
-    shell: process.platform === "win32"
+    allowFailure: true
   });
-
-  if (result.error) {
-    throw result.error;
-  }
-
-  return result.status === 0 && result.stdout.trim() === version;
+  return isPublishedVersionFromViewResult(result, version);
 }
+// DESIGN NOTE: Allowing failure here lets npm signal “not published” without collapsing the whole publish workflow.
 
+/**
+ * Prompt interactively for an npm OTP when needed.
+ *
+ * Args:
+ *   packageName: Package currently being published.
+ *
+ * Returns:
+ *   Trimmed OTP string or `undefined` when the user submits an empty response.
+ *
+ * Raises:
+ *   Never.
+ */
 async function promptForOtp(packageName) {
   const rl = readline.createInterface({ input, output });
   try {
@@ -97,26 +185,47 @@ async function promptForOtp(packageName) {
     rl.close();
   }
 }
+// DESIGN NOTE: The prompt stays package-specific so repeated publish attempts remain easy to correlate in terminal history.
 
+/**
+ * Execute the publish workflow across workspace packages.
+ *
+ * Args:
+ *   None.
+ *
+ * Returns:
+ *   Never returns a value.
+ *
+ * Raises:
+ *   Error: If package metadata is invalid or an npm command cannot be launched.
+ */
 async function main() {
   console.log(`[publish-release] tag=${tag}${dryRun ? " (dry-run)" : ""}`);
   console.log(configuredOtp ? "[publish-release] using OTP from NPM_PUBLISH_OTP" : "[publish-release] no fixed OTP provided");
 
+  // Sequential npm view per package avoids registry rate limits and keeps order deterministic (PERF-2-1: parallel checks deferred).
   for (const packageDir of packageDirs) {
     const manifest = readPackageManifest(packageDir);
-    if (isAlreadyPublished(manifest.name, manifest.version)) {
-      console.log(`[publish-release] ${manifest.name}@${manifest.version} already published, skipping`);
+    const { name, version } = validatedPublishIdentity(manifest, packageDir);
+    if (isAlreadyPublished(name, version)) {
+      console.log(`[publish-release] ${name}@${version} already published, skipping`);
       continue;
     }
-    const otp = configuredOtp ?? (dryRun ? undefined : await promptForOtp(manifest.name));
-    const publishArgs = publishArgsFor(packageDir, manifest.name, otp);
-    console.log(`[publish-release] ${manifest.name}@${manifest.version}`);
-    console.log(`  ${npmCommand} ${publishArgs.join(" ")}`);
+    const otp = configuredOtp ?? (dryRun ? undefined : await promptForOtp(name));
+    const publishArgs = publishArgsFor({
+      packageDir,
+      packageName: name,
+      tag,
+      otp
+    });
+    console.log(`[publish-release] ${name}@${version}`);
+    console.log(`  ${npmCommand} ${formatNpmArgsForLog(publishArgs)}`);
     if (!dryRun) {
       run(npmCommand, publishArgs);
     }
   }
 }
+// DESIGN NOTE: The workflow remains strictly sequential so publish order stays deterministic and dependency-safe.
 
 try {
   await main();

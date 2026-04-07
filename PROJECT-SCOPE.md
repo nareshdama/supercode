@@ -41,7 +41,7 @@ Supercode is a developer orchestration framework built around:
 
 - `npx @nareshdama/supercode init`
 - `npm install @nareshdama/core`
-- `npm install @nareshdama/supercode`
+- `npm install @nareshdama/supercode` (CLI plus the `./runtime` subpath for programmatic embedding — ESM `import` only)
 - source checkout from GitHub
 
 ## Current Project Boundary

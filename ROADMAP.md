@@ -44,9 +44,13 @@ Focus:
 - formalize integration seams currently implied by internal package boundaries
 - expand example usage beyond the CLI path
 
+Progress (docs and API):
+
+- `@nareshdama/supercode/runtime` exposes `resolveExecutionProfileInputs`, `buildExecutionProfileForProject`, and `createPersistedRuntimeContext` aligned with the CLI profile pipeline; tutorials live under [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md) and [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md).
+
 Potential deliverables:
 
-- clearer embedding patterns around runtime construction
+- clearer embedding patterns around runtime construction (in progress)
 - stronger package-level API guidance
 - additional examples for host applications and custom tool registries
 - more explicit compatibility and versioning guidance

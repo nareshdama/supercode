@@ -34,3 +34,7 @@ supercode run "add authentication"
 supercode run "add authentication"
 supercode memory list authentication
 ```
+
+## See also
+
+- [Programmatic runtime (Node embedding)](../programmatic-runtime/README.md): build the same persisted kernel from a script using `@nareshdama/supercode/runtime` without the interactive CLI.

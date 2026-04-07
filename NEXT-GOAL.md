@@ -18,7 +18,7 @@ Near-term outcomes:
 - cleaner patch-release workflow
 - less docs drift between public package behavior and repo docs
 - better contributor onboarding
-- better guidance for teams embedding the runtime packages
+- better guidance for teams embedding the runtime packages (canonical entry: `@nareshdama/supercode/runtime`; see [DEVELOPING.md](DEVELOPING.md#programmatic-embedding) and [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md))
 
 Notes:
 

@@ -15,11 +15,13 @@
 - Phase 5: optional local memory with persisted records and CLI inspection commands.
 - Phase 6: workflow packs, plugins, hooks, extension validation, plugin commands, and plugin-expanded run plans.
 - Phase 7: adoption paths for `npx @nareshdama/supercode init`, package-consumer installs, source checkout usage, and smoke validation across those paths.
+- Phase 10 (in progress): programmatic embedding via `@nareshdama/supercode/runtime` with shared execution-profile helpers aligned to the CLI; see [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md).
 - Release baseline: [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md), [SECURITY-REVIEW.md](SECURITY-REVIEW.md), [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md), [examples/README.md](examples/README.md), and `npm run verify:docs`.
 - Contributor and developer docs are now part of the maintained top-level surface: [CONTRIBUTING.md](CONTRIBUTING.md), [DEVELOPING.md](DEVELOPING.md), [PROJECT-SCOPE.md](PROJECT-SCOPE.md), and [ROADMAP.md](ROADMAP.md).
 
 ## Current Development Focus
 - Keep top-level docs, examples, and CLI help aligned with shipped behavior.
+- Document programmatic embedding via `@nareshdama/supercode/runtime` (`buildExecutionProfileForProject`, `resolveExecutionProfileInputs`, `createPersistedRuntimeContext`) for host apps; see [DEVELOPING.md](DEVELOPING.md#programmatic-embedding) and [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md).
 - Re-run the release gate in [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md) before each patch or minor release.
 - Continue MCP and plugin adversarial testing as post-Phase-8 hardening work.
 - Validate published package contents and install behavior from outside the source tree whenever packaging changes land.

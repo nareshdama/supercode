@@ -1,3 +1,5 @@
+// MCP list/invoke subprocess steps assert exit code + stdout only (stderr may include benign warnings; Cycle 3 Fixer BUG-3-M1).
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from "node:fs";
@@ -5,6 +7,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { runCli } from "../dist/index.js";
+import { runSupercodeCliSync, splitCliOutputLines } from "./cli-process-runner.mjs";
 
 test("runCli init writes Supercode state for a new project", async () => {
   const cwd = mkdtempSync(path.join(tmpdir(), "supercode-cli-"));
@@ -1534,16 +1537,10 @@ test("SimpleTaskExecutor is available in runtime context", async () => {
       err: message => err.push(message)
     });
 
-    const state = (await import("../dist/runtime.js")).createPersistedRuntimeContext(
+    const runtime = await import("@nareshdama/supercode/runtime");
+    const state = runtime.createPersistedRuntimeContext(
       cwd,
-      (await import("@nareshdama/core")).createExecutionProfile({
-        ... (await import("@nareshdama/detect")).detectRuntimeInputs(cwd, process.env),
-        workflowRecommendation: (await import("@nareshdama/workflows")).recommendWorkflowPacks(
-          (await import("@nareshdama/detect")).detectProjectProfile(cwd),
-          (await import("@nareshdama/detect")).detectHostCapabilities(process.env),
-          (await import("@nareshdama/detect")).detectModelCapabilities(process.env)
-        )
-      })
+      runtime.buildExecutionProfileForProject(cwd)
     );
 
     assert.ok(state.executor);
@@ -1583,36 +1580,29 @@ test("runCli mcp commands list and invoke builtin runtime servers", async () => 
       )
     );
 
-    out.length = 0;
-    err.length = 0;
+    const mcpEnv = { SUPERCODE_HOST_SUPPORTS_MCP: "1" };
 
-    const listCode = await runCli(["mcp", "list"], {
-      out: message => out.push(message),
-      err: message => err.push(message)
-    });
+    const listProc = runSupercodeCliSync(cwd, ["mcp", "list"], mcpEnv);
+    assert.equal(listProc.status, 0);
+    const listLines = splitCliOutputLines(listProc.stdout);
+    assert.ok(listLines.some(line => line.includes("MCP: available=true configured=true")));
+    assert.ok(listLines.some(line => line.includes("local [builtin]")));
 
-    assert.equal(listCode, 0);
-    assert.equal(err.length, 0);
-    assert.ok(out.some(line => line.includes("MCP: available=true configured=true")));
-    assert.ok(out.some(line => line.includes("local [builtin]")));
-
-    out.length = 0;
-    err.length = 0;
-
-    const invokeCode = await runCli(["mcp", "invoke", "local", "echo", '{"message":"hello"}'], {
-      out: message => out.push(message),
-      err: message => err.push(message)
-    });
-    const startedTaskLine = out.find(line => line.startsWith("Started task "));
-    const completedTaskLine = out.find(line => line.startsWith("Completed task "));
-    const resultLine = out.find(line => line.startsWith("Saved result "));
-    const responseLine = out.find(line => line.startsWith("Response: "));
+    const invokeProc = runSupercodeCliSync(
+      cwd,
+      ["mcp", "invoke", "local", "echo", '{"message":"hello"}'],
+      mcpEnv
+    );
+    assert.equal(invokeProc.status, 0);
+    const invokeLines = splitCliOutputLines(invokeProc.stdout);
+    const startedTaskLine = invokeLines.find(line => line.startsWith("Started task "));
+    const completedTaskLine = invokeLines.find(line => line.startsWith("Completed task "));
+    const resultLine = invokeLines.find(line => line.startsWith("Saved result "));
+    const responseLine = invokeLines.find(line => line.startsWith("Response: "));
     const taskId = startedTaskLine?.replace("Started task ", "").trim();
     const completedTaskId = completedTaskLine?.replace("Completed task ", "").trim();
     const resultRef = resultLine?.replace("Saved result ", "").trim();
 
-    assert.equal(invokeCode, 0);
-    assert.equal(err.length, 0);
     assert.ok(taskId);
     assert.equal(taskId, completedTaskId);
     assert.ok(resultRef);

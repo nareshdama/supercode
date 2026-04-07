@@ -27,6 +27,7 @@ The CLI wrapper `supercode release check` can audit release metadata and optiona
 
 - Confirm [README.md](README.md) matches the actual CLI help output
 - Confirm [examples/minimal-runtime/README.md](examples/minimal-runtime/README.md) uses valid CLI commands
+- Confirm [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md) matches the current `@nareshdama/supercode/runtime` embedding surface and `npm run verify:docs` passes
 - Confirm [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md) reflects the latest profiling run
 - Confirm install guidance covers zero-install bootstrap, package-consumer usage, and source-checkout usage
 - Confirm release notes mention user-visible command, install, or template changes

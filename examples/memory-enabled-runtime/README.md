@@ -36,3 +36,7 @@ What to look for:
 - the second run can attach memories created by the first run
 - `supercode memory list authentication` shows persisted memory records for the current session
 - `supercode memory show <memory-id>` can inspect a specific stored memory
+
+## See also
+
+- [Programmatic runtime](../programmatic-runtime/README.md): embed `@nareshdama/supercode/runtime` from Node when building host apps that construct the kernel directly.

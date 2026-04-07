@@ -16,6 +16,7 @@ Reviewed components:
 - [packages/workflows/src/index.ts](packages/workflows/src/index.ts)
 - [packages/state/src/file-store.ts](packages/state/src/file-store.ts)
 - [docs/reference-notes/mcp-hardening.md](docs/reference-notes/mcp-hardening.md)
+- [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md)
 
 ## Current Posture
 
@@ -47,6 +48,11 @@ Status: fixed in [file-store.ts](packages/state/src/file-store.ts) with configur
 - No current blocker was found in plugin cycle detection or invalid tool-reference validation. The workflow validator explicitly rejects duplicate plugin identifiers, duplicate command names, invalid hook failure policies, unknown tool references, and plugin-local tool cycles in [index.ts](packages/workflows/src/index.ts).
 - MCP controls are summarized in [docs/reference-notes/mcp-hardening.md](docs/reference-notes/mcp-hardening.md) and partially enforced in runtime code, but this remains a high-risk surface because it combines transport, trust, and external tool execution.
 - Permission behavior is conservative for shell, network, and MCP categories, but filesystem actions default to allow. That is acceptable for the current local-tooling model, but it is a release sensitivity if Supercode expands beyond explicitly user-scoped workspaces.
+
+## Programmatic embedding
+
+- The `@nareshdama/supercode/runtime` subpath exposes the same persisted kernel as the CLI; permission and tool boundaries are unchanged.
+- Host applications own logging policy: session identifiers and error text may be sensitive in shared CI or support logs; see [docs/reference-notes/programmatic-embedding.md](docs/reference-notes/programmatic-embedding.md).
 
 ## Residual Risks
 

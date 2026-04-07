@@ -22,7 +22,7 @@ Supercode is an adaptive developer orchestration framework. The current reposito
 
 ## Packages
 
-- `@nareshdama/supercode`: CLI entrypoint
+- `@nareshdama/supercode`: CLI entrypoint and programmatic embedding surface via the `./runtime` subpath (`createPersistedRuntimeContext`, `buildExecutionProfileForProject`, `resolveExecutionProfileInputs`, and related APIs — same module as the CLI kernel). ESM-only; see [DEVELOPING.md](DEVELOPING.md#programmatic-embedding) and [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md).
 - `@nareshdama/create-supercode`: fresh project bootstrap
 - `@nareshdama/core`: shared runtime contracts
 - `@nareshdama/tasks`: in-memory task lifecycle manager

@@ -9,7 +9,7 @@ This repository ships the Supercode runtime, CLI, scaffolder, and supporting pac
 - Read [README.md](README.md) for the current public surface.
 - Read [STATUS.md](STATUS.md) for the current project state.
 - Read [PROJECT-SCOPE.md](PROJECT-SCOPE.md) to stay inside the intended product boundary.
-- Read [DEVELOPING.md](DEVELOPING.md) for package layout, commands, and release workflow.
+- Read [DEVELOPING.md](DEVELOPING.md) for package layout, commands, release workflow, and [programmatic embedding](DEVELOPING.md#programmatic-embedding) (`@nareshdama/supercode/runtime`).
 
 ## Local Setup
 

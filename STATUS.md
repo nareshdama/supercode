@@ -17,7 +17,7 @@
 - Phase 7: adoption paths for `npx @nareshdama/supercode init`, package-consumer installs, source checkout usage, and smoke validation across those paths.
 - Phase 10 (in progress): programmatic embedding via `@nareshdama/supercode/runtime` with shared execution-profile helpers aligned to the CLI; see [examples/programmatic-runtime/README.md](examples/programmatic-runtime/README.md).
 - Release baseline: [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md), [SECURITY-REVIEW.md](SECURITY-REVIEW.md), [PERFORMANCE-BASELINE.md](PERFORMANCE-BASELINE.md), [examples/README.md](examples/README.md), and `npm run verify:docs`.
-- Contributor and developer docs are now part of the maintained top-level surface: [CONTRIBUTING.md](CONTRIBUTING.md), [DEVELOPING.md](DEVELOPING.md), [PROJECT-SCOPE.md](PROJECT-SCOPE.md), and [ROADMAP.md](ROADMAP.md).
+- Contributor, developer, and **user** docs are part of the maintained top-level surface: [USER-GUIDE.md](USER-GUIDE.md), [CONTRIBUTING.md](CONTRIBUTING.md), [DEVELOPING.md](DEVELOPING.md), [PROJECT-SCOPE.md](PROJECT-SCOPE.md), and [ROADMAP.md](ROADMAP.md).
 
 ## Current Development Focus
 - Keep top-level docs, examples, and CLI help aligned with shipped behavior.

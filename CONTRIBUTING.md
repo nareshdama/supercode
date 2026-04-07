@@ -7,6 +7,7 @@ This repository ships the Supercode runtime, CLI, scaffolder, and supporting pac
 ## Before You Change Code
 
 - Read [README.md](README.md) for the current public surface.
+- Read [USER-GUIDE.md](USER-GUIDE.md) if you need the end-user CLI story before changing user-visible behavior.
 - Read [STATUS.md](STATUS.md) for the current project state.
 - Read [PROJECT-SCOPE.md](PROJECT-SCOPE.md) to stay inside the intended product boundary.
 - Read [DEVELOPING.md](DEVELOPING.md) for package layout, commands, release workflow, and [programmatic embedding](DEVELOPING.md#programmatic-embedding) (`@nareshdama/supercode/runtime`).

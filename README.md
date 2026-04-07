@@ -2,6 +2,8 @@
 
 Supercode is an adaptive developer orchestration framework. The current repository has Phases 1 through 8 implemented, including the Phase 8 hardening deliverables: release checks, security review, performance baselining, docs verification, and example tutorials.
 
+**Using the CLI:** see the [User guide](USER-GUIDE.md) for install, quick start, tasks, packs, memory, MCP, and links to tutorials.
+
 ## Development Status
 
 - Current phase: Phase 8: Hardening and Launch, complete as of 2026-04-02
@@ -11,6 +13,7 @@ Supercode is an adaptive developer orchestration framework. The current reposito
 
 ## Project Docs
 
+- [USER-GUIDE.md](USER-GUIDE.md)
 - [HANDOFF.md](HANDOFF.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [DEVELOPING.md](DEVELOPING.md)

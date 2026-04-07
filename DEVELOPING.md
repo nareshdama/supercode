@@ -126,6 +126,7 @@ Notes:
 
 ## Docs That Matter During Development
 
+- [USER-GUIDE.md](USER-GUIDE.md): end-user CLI guide (keep aligned when changing commands or workflows)
 - [README.md](README.md): public entrypoint
 - [STATUS.md](STATUS.md): shipped state
 - [NEXT-GOAL.md](NEXT-GOAL.md): current execution focus
